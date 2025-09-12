@@ -39,5 +39,11 @@ return [
         'client_id'     => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect'      => env('GOOGLE_REDIRECT_URL', 'http://127.0.0.1/api/auth/google/callback'),
+    ],
+
+    'riot' => [
+        'api_url'        => env('RIOT_API_URL', 'https://%s.api.riotgames.com'),
+        'api_key'        => env('RIOT_API_KEY'),
+        'default_region' => env('RIOT_DEFAULT_REGION', 'europe')
     ]
 ];

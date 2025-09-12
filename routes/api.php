@@ -1,8 +1,11 @@
 <?php
 
-use App\Http\Controllers\FoodController;
+use App\Http\Controllers\SummonerController;
 
 Route::middleware('auth')->group(function () {
-    Route::post('new-meal', [FoodController::class, 'store'])->name('submit-meal');
-    Route::get('food/{food}/image', [FoodController::class, 'show'])->name('food.image');
+    //
+});
+
+Route::middleware('guest')->group(function () {
+    Route::get('summoner/search', [SummonerController::class, 'show'])->name('summoner.search');
 });
