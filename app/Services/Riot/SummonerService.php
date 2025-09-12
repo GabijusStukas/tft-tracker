@@ -3,35 +3,48 @@
 namespace App\Services\Riot;
 
 use App\DTO\SummonerSearchDTO;
+use App\Http\Exceptions\RiotApiException;
 use App\Models\Summoner;
+use App\Repositories\SummonerRepository;
+use App\Services\Riot\API\AccountService;
 use App\Services\Riot\API\RiotServiceFactory;
-use GuzzleHttp\Exception\GuzzleException;
 
 class SummonerService
 {
+    /**
+     * @var AccountService
+     */
+    private AccountService $accountService;
+
+    /**
+     * @param RiotServiceFactory $serviceFactory
+     * @param SummonerRepository $repository
+     */
+    public function __construct(RiotServiceFactory $serviceFactory, private SummonerRepository $repository)
+    {
+        $this->accountService = $serviceFactory->account();
+    }
+
     /**
      * Get summoner information by summoner name
      *
      * @param SummonerSearchDTO $DTO
      * @return Summoner
-     * @throws GuzzleException
+     * @throws RiotApiException
      */
     public function getSummonerByName(SummonerSearchDTO $DTO): Summoner
     {
-        $summoner = Summoner::query()
-            ->where('game_name', $DTO->getUsername())
-            ->where('tag_line', $DTO->getTagLine())
-            ->first();
+        $summoner = $this->repository->getSummoner($DTO);
 
-        if (!$summoner) {
-            $summonerData = RiotServiceFactory::account()->getSummonerByName($DTO->getUsername(), $DTO->getTagLine());
-            $summoner = Summoner::query()->create([
-                'game_name' => $summonerData['gameName'],
-                'tag_line'  => $summonerData['tagLine'],
-                'puuid'     => $summonerData['puuid'],
-            ]);
+        if ($summoner) {
+            return $summoner;
         }
 
-        return $summoner;
+        $summonerData = $this->accountService->getSummonerByName($DTO->getUsername(), $DTO->getTagLine());
+        $summonerData = array_merge($summonerData, $this->accountService->getRegionByGame($summonerData['puuid']));
+
+        return $this->repository->createOrUpdateSummoner(
+            $summonerData
+        );
     }
 }

@@ -14,21 +14,24 @@ class RiotClient
     private Client $client;
 
     /**
-     * @param string $region
+     * @param string|null $region
+     * @return RiotClient
      */
-    public function __construct(string $region)
+    public function setUpClient(?string $region = null): self
     {
         if (empty(config('services.riot.api_key'))) {
             throw new InvalidArgumentException('Riot API key is not configured');
         }
 
         $this->client = new Client([
-            'base_uri' => sprintf(config('services.riot.api_url'), $region),
+            'base_uri' => sprintf(config('services.riot.api_url'), $region ?? config('services.riot.default_region')),
             'headers'  => [
                 'X-Riot-Token' => config('services.riot.api_key'),
                 'Accept'       => 'application/json',
             ],
         ]);
+
+        return $this;
     }
 
     /**

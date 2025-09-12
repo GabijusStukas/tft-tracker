@@ -5,20 +5,18 @@ namespace App\Services\Riot\API;
 class RiotServiceFactory
 {
     /**
-     * @param string|null $region
-     * @return RiotClient
+     * @param RiotClient $client
      */
-    private static function createClient(?string $region = null): RiotClient
+    public function __construct(private RiotClient $client)
     {
-        return new RiotClient($region ?? config('services.riot.default_region'));
     }
 
     /**
      * @param string|null $region
      * @return AccountService
      */
-    public static function account(?string $region = null): AccountService
+    public function account(?string $region = null): AccountService
     {
-        return new AccountService(self::createClient($region));
+        return new AccountService($this->client->setUpClient($region));
     }
 }
