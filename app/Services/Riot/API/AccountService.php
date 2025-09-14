@@ -21,10 +21,10 @@ class AccountService
      * @return array
      * @throws RiotApiException
      */
-    public function getSummonerByName(string $username, ?string $tagLine): array
+    public function getAccountByName(string $username, ?string $tagLine): array
     {
         try {
-            return $this->client->request('GET',"riot/account/v1/accounts/by-riot-id/{$username}/{$tagLine}");
+            return $this->client->request('GET',"riot/account/v1/accounts/by-riot-id/$username/$tagLine");
         } catch (Throwable $exception) {
             Log::info('Riot API error', [
                 'message'  => $exception->getMessage(),

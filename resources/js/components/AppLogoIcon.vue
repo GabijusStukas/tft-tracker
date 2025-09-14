@@ -15,13 +15,6 @@ defineProps<Props>();
 <template>
     <svg width="128" height="128" version="1.1" viewBox="0 0 510 150" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:xlink="http://www.w3.org/1999/xlink">
         <metadata>
-            <rdf:RDF>
-                <cc:Work rdf:about="">
-                    <dc:format>image/svg+xml</dc:format>
-                    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-                    <dc:title>Teamfight Tactics Logo</dc:title>
-                </cc:Work>
-            </rdf:RDF>
         </metadata>
         <defs>
             <linearGradient id="linearGradient4588" x2="8.5286e-15" y1=".18" y2="139.47" gradientTransform="translate(5 5.0744)" gradientUnits="userSpaceOnUse">

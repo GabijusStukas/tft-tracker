@@ -2,13 +2,13 @@
 
 namespace Database\Factories;
 
-use App\Models\Summoner;
+use App\Models\RiotAccount;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Summoner>
+ * @extends Factory<RiotAccount>
  */
-class SummonerFactory extends Factory
+class RiotAccountFactory extends Factory
 {
     /**
      * @return array<string, mixed>
@@ -19,6 +19,8 @@ class SummonerFactory extends Factory
             'puuid'     => $this->faker->uuid(),
             'game_name' => $this->faker->userName(),
             'tag_line'  => $this->faker->randomNumber(4, true),
+            'region'    => $this->faker->randomElement(['euw1', 'eun1']),
+            'game'      => $this->faker->randomElement(['tft', 'lol'])
         ];
     }
 }

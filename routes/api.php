@@ -7,5 +7,7 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware('guest')->group(function () {
-    Route::get('summoner/search', [SummonerController::class, 'show'])->name('summoner.search');
+    Route::get('summoners/search',                 [SummonerController::class, 'search'])->name('summoner.search');
+    Route::post('summoners/{username}-{tag_line}', [SummonerController::class, 'show'])  ->name('summoner.show');
 });
+

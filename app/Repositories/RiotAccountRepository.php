@@ -2,18 +2,18 @@
 
 namespace App\Repositories;
 
-use App\DTO\SummonerSearchDTO;
-use App\Models\Summoner;
+use App\DTO\RiotAccountSearchDTO;
+use App\Models\RiotAccount;
 
-class SummonerRepository
+class RiotAccountRepository
 {
     /**
-     * @param SummonerSearchDTO $DTO
-     * @return Summoner|null
+     * @param RiotAccountSearchDTO $DTO
+     * @return RiotAccount|null
      */
-    public function getSummoner(SummonerSearchDTO $DTO): ?Summoner
+    public function getAccount(RiotAccountSearchDTO $DTO): ?RiotAccount
     {
-        return Summoner::query()
+        return RiotAccount::query()
             ->where('game_name', $DTO->getUsername())
             ->where('tag_line', $DTO->getTagLine())
             ->first();
@@ -21,11 +21,11 @@ class SummonerRepository
 
     /**
      * @param array $data
-     * @return Summoner
+     * @return RiotAccount
      */
-    public function createOrUpdateSummoner(array $data): Summoner
+    public function createOrUpdateAccount(array $data): RiotAccount
     {
-        return Summoner::query()->updateOrCreate([
+        return RiotAccount::query()->updateOrCreate([
             'game_name' => $data['gameName'],
             'tag_line'  => $data['tagLine'],
         ], [

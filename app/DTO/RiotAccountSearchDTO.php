@@ -2,7 +2,7 @@
 
 namespace App\DTO;
 
-class SummonerSearchDTO
+class RiotAccountSearchDTO
 {
     /**
      * @param string $username

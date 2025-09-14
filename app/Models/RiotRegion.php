@@ -8,31 +8,25 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
- * @property string $puuid
- * @property string $game_name
- * @property string $tag_line
- * @property string $game
+ * @property string $cluster
  * @property string $region
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-class Summoner extends Model
+class RiotRegion extends Model
 {
     use HasFactory;
 
     /**
      * @var string
      */
-    protected $table = 'summoners';
+    protected $table = 'riot_regions';
 
     /**
      * @var string[]
      */
     protected $fillable = [
-        'puuid',
-        'game_name',
-        'tag_line',
-        'game',
+        'cluster',
         'region',
     ];
 }

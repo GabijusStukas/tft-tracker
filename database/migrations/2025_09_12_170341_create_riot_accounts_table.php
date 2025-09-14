@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('summoners', function (Blueprint $table) {
+        Schema::create('riot_accounts', function (Blueprint $table) {
             $table->id();
             $table->string('puuid')->unique();
             $table->string('game_name');
@@ -22,7 +22,7 @@ return new class extends Migration
 
             $table->foreign('region')
                 ->references('region')
-                ->on('regions')
+                ->on('riot_regions')
                 ->onDelete('cascade');
         });
     }
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('summoners');
+        Schema::dropIfExists('riot_accounts');
     }
 };

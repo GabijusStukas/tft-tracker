@@ -19,4 +19,13 @@ class RiotServiceFactory
     {
         return new AccountService($this->client->setUpClient($region));
     }
+
+    /**
+     * @param string|null $region
+     * @return TFTService
+     */
+    public function tft(?string $region = null): TFTService
+    {
+        return new TFTService($this->client->setUpClient($region));
+    }
 }

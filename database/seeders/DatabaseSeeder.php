@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Region;
+use App\Models\RiotRegion;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -18,12 +18,12 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        Region::factory()->create([
+        RiotRegion::factory()->create([
             'cluster' => 'europe',
             'region'  => 'euw1',
         ]);
 
-        Region::factory()->create([
+        RiotRegion::factory()->create([
             'cluster' => 'europe',
             'region'  => 'eun1',
         ]);

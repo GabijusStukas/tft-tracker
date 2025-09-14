@@ -11,11 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('regions', function (Blueprint $table) {
+        Schema::create('riot_matches', function (Blueprint $table) {
             $table->id();
-            $table->string('cluster')->index();
-            $table->string('region')->unique();
+            $table->unsignedBigInteger('account_id')->index();
+            $table->string('match_id')->index();
             $table->timestamps();
+
+            $table->foreign('account_id')
+                ->references('id')
+                ->on('riot_accounts')
+                ->onDelete('cascade');
         });
     }
 
@@ -24,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('regions');
+        Schema::dropIfExists('riot_matches');
     }
 };

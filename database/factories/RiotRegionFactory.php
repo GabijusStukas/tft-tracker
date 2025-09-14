@@ -2,13 +2,13 @@
 
 namespace Database\Factories;
 
-use App\Models\Region;
+use App\Models\RiotRegion;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Region>
+ * @extends Factory<RiotRegion>
  */
-class RegionFactory extends Factory
+class RiotRegionFactory extends Factory
 {
     /**
      * Define the model's default state.

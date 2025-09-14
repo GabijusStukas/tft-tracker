@@ -8,8 +8,9 @@ use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
 {
-    use RefreshDatabase;
-
+    /**
+     * @return void
+     */
     public function test_login_screen_can_be_rendered()
     {
         $response = $this->get('/login');
@@ -17,6 +18,9 @@ class AuthenticationTest extends TestCase
         $response->assertStatus(200);
     }
 
+    /**
+     * @return void
+     */
     public function test_users_can_logout()
     {
         $user = User::factory()->create();

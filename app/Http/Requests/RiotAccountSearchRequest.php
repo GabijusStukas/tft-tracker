@@ -2,11 +2,11 @@
 
 namespace App\Http\Requests;
 
-use App\DTO\SummonerSearchDTO;
+use App\DTO\RiotAccountSearchDTO;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class SummonerSearchRequest extends FormRequest
+class RiotAccountSearchRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -22,13 +22,24 @@ class SummonerSearchRequest extends FormRequest
     }
 
     /**
-     * @return SummonerSearchDTO
+     * @return void
      */
-    public function toDTO(): SummonerSearchDTO
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'username' => $this->username ?? $this->route('username'),
+            'tag_line' => $this->tag_line ?? $this->route('tag_line'),
+        ]);
+    }
+
+    /**
+     * @return RiotAccountSearchDTO
+     */
+    public function toDTO(): RiotAccountSearchDTO
     {
         $data = $this->validated();
 
-        return new SummonerSearchDTO(
+        return new RiotAccountSearchDTO(
             username: $data['username'],
             tagLine: $data['tag_line'] ?? null
         );

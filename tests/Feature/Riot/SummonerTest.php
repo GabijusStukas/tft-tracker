@@ -3,7 +3,8 @@
 namespace Tests\Feature\Riot;
 
 use App\Http\Exceptions\RiotApiException;
-use App\Models\Summoner;
+use App\Models\RiotAccount;
+use App\Models\RiotRegion;
 use App\Services\Riot\API\RiotClient;
 use Tests\TestCase;
 use Mockery;
@@ -40,6 +41,15 @@ class SummonerTest extends TestCase
                 'gameName' => 'TestUser',
                 'tagLine' => 'EUW',
                 'puuid' => 'test-puuid'
+            ])
+            ->getMock()
+            ->shouldReceive('request')
+            ->once()
+            ->with('GET', 'riot/account/v1/region/by-game/tft/by-puuid/test-puuid')
+            ->andReturn([
+                'puuid' => 'test-puuid',
+                'game' => 'tft',
+                'region' => 'euw1'
             ]);
 
         $this->app->instance(RiotClient::class, $this->riotClient);
@@ -54,10 +64,12 @@ class SummonerTest extends TestCase
             ->assertJson([
                 'game_name' => 'TestUser',
                 'tag_line' => 'EUW',
-                'puuid' => 'test-puuid'
+                'puuid' => 'test-puuid',
+                'region' => 'euw1',
+                'game' => 'tft'
             ]);
 
-        $this->assertDatabaseHas('summoners', [
+        $this->assertDatabaseHas('riot_accounts', [
             'game_name' => 'TestUser',
             'tag_line' => 'EUW',
             'puuid' => 'test-puuid'
@@ -91,7 +103,7 @@ class SummonerTest extends TestCase
                 'message' => 'Could not find such summoner: NonExistentUser#EUW'
             ]);
 
-        $this->assertDatabaseMissing('summoners', [
+        $this->assertDatabaseMissing('riot_accounts', [
             'game_name' => 'NonExistentUser',
             'tag_line' => 'EUW'
         ]);
@@ -102,10 +114,11 @@ class SummonerTest extends TestCase
      */
     public function testRiotApiNotCalledIfSummonerExistsInDatabase(): void
     {
-        /** @var Summoner $summoner */
-        $summoner = Summoner::factory()->create();
+        /** @var RiotAccount $summoner */
+        $summoner = RiotAccount::factory()->create();
 
-        $this->riotClient->shouldNotReceive('setUpClient')
+        $this->riotClient->shouldReceive('setUpClient')
+            ->once()
             ->getMock()
             ->shouldNotReceive('request');
 
@@ -124,7 +137,7 @@ class SummonerTest extends TestCase
                 'puuid' => $summoner->puuid
             ]);
 
-        $this->assertDatabaseHas('summoners', [
+        $this->assertDatabaseHas('riot_accounts', [
             'game_name' => $summoner->game_name,
             'tag_line' => $summoner->tag_line,
             'puuid' => $summoner->puuid

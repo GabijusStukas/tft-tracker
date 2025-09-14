@@ -10,9 +10,8 @@ use App\Repositories\RiotRegionRepository;
 use App\Repositories\RiotAccountRepository;
 use App\Services\Riot\API\AccountService;
 use App\Services\Riot\API\RiotServiceFactory;
-use Illuminate\Support\Collection;
 
-class SummonerService
+class DataDragonService
 {
     /**
      * @var AccountService
@@ -31,6 +30,7 @@ class SummonerService
         private RiotRegionRepository  $riotRegionRepository,
         private RiotMatchRepository   $riotMatchRepository
     ) {
+        $this->accountService = $serviceFactory->account();
     }
 
     /**
@@ -48,28 +48,11 @@ class SummonerService
             return $account;
         }
 
-        $accountService = $this->serviceFactory->account();
-        $accountData    = $accountService->getAccountByName($DTO->getUsername(), $DTO->getTagLine());
-        $accountData    = array_merge($accountData, $accountService->getRegionByGame($accountData['puuid']));
+        $accountData = $this->accountService->getAccountByName($DTO->getUsername(), $DTO->getTagLine());
+        $accountData = array_merge($accountData, $this->accountService->getRegionByGame($accountData['puuid']));
 
         return $this->riotAccountRepository->createOrUpdateAccount(
             $accountData
         );
-    }
-
-    /**
-     * @param RiotAccountSearchDTO $DTO
-     * @return Collection
-     * @throws RiotApiException
-     */
-    public function getSummonerMatches(RiotAccountSearchDTO $DTO): Collection
-    {
-        $account = $this->getSummonerByName($DTO);
-
-        $matches = $this->serviceFactory
-            ->tft($this->riotRegionRepository->getClusterByRegion($account->region))
-            ->getMatchesByPuuid($account->puuid);
-
-        return $this->riotMatchRepository->upsert($matches, $account);
     }
 }
