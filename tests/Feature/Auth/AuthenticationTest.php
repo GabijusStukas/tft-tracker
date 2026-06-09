@@ -3,8 +3,8 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthenticationTest extends TestCase
 {
@@ -24,10 +24,12 @@ class AuthenticationTest extends TestCase
     public function test_users_can_logout()
     {
         $user = User::factory()->create();
+        $token = JWTAuth::fromUser($user);
 
-        $response = $this->actingAs($user)->post('/logout');
+        $this->actingAs($user, 'api')->postJson('/auth/logout', [], [
+            'Authorization' => 'Bearer ' . $token,
+        ]);
 
         $this->assertGuest();
-        $response->assertRedirect('/');
     }
 }

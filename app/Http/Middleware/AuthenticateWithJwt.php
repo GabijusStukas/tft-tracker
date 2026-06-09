@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,29 +14,38 @@ class AuthenticateWithJwt
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $cookieToken = $request->cookie('jwt_token')) {
-            return $this->unauthenticatedResponse($request);
+        if (Auth::guard('api')->check()) {
+            $this->setUser();
+            return $next($request);
         }
 
-        $request->headers->set('Authorization', 'Bearer '.$cookieToken);
+        if (! $request->headers->get('Authorization')) {
 
-        try {
-            if (Auth::guard('api')->check()) {
-                $user = Auth::guard('api')->user();
-
-                if ($user) {
-                    Auth::setUser($user);
-                } else {
-                    return $this->unauthenticatedResponse($request);
-                }
-            } else {
+            if (! $cookieToken = $request->cookie('jwt_token')) {
                 return $this->unauthenticatedResponse($request);
             }
-        } catch (Exception $e) {
-            return $this->unauthenticatedResponse($request);
+
+            $request->headers->set('Authorization', 'Bearer '.$cookieToken);
         }
 
-        return $next($request);
+        if (Auth::guard('api')->check()) {
+            $this->setUser();
+            return $next($request);
+        }
+
+        return $this->unauthenticatedResponse($request);
+    }
+
+    /**
+     * @return void
+     */
+    private function setUser(): void
+    {
+        $user = Auth::guard('api')->user();
+
+        if ($user) {
+            Auth::setUser($user);
+        }
     }
 
     /**

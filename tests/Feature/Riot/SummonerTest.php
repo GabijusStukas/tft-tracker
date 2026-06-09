@@ -4,7 +4,7 @@ namespace Tests\Feature\Riot;
 
 use App\Http\Exceptions\RiotApiException;
 use App\Models\RiotAccount;
-use App\Models\RiotRegion;
+use App\Models\User;
 use App\Services\Riot\API\RiotClient;
 use Tests\TestCase;
 use Mockery;
@@ -30,6 +30,8 @@ class SummonerTest extends TestCase
      */
     public function testCanSearchSummonerSuccessfully(): void
     {
+        $this->actingAs(User::factory()->create(), 'api');
+
         $this->riotClient->shouldReceive('setUpClient')
             ->once()
             ->andReturnSelf()
@@ -81,6 +83,8 @@ class SummonerTest extends TestCase
      */
     public function testReturnsErrorWhenSummonerNotFound(): void
     {
+        $this->actingAs(User::factory()->create(), 'api');
+
         $this->riotClient->shouldReceive('setUpClient')
             ->once()
             ->andReturnSelf()
@@ -114,15 +118,10 @@ class SummonerTest extends TestCase
      */
     public function testRiotApiNotCalledIfSummonerExistsInDatabase(): void
     {
+        $this->actingAs(User::factory()->create(), 'api');
+
         /** @var RiotAccount $summoner */
         $summoner = RiotAccount::factory()->create();
-
-        $this->riotClient->shouldReceive('setUpClient')
-            ->once()
-            ->getMock()
-            ->shouldNotReceive('request');
-
-        $this->app->instance(RiotClient::class, $this->riotClient);
 
         $response = $this->getJson(route('summoner.search', [
             'username' => $summoner->game_name,

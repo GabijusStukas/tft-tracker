@@ -82,7 +82,6 @@ export const useAuth = () => {
 
     const setToken = (newToken: string) => {
         token.value = newToken;
-        localStorage.setItem(JWT_COOKIE_NAME, newToken);
         setCookie(JWT_COOKIE_NAME, newToken);
     };
 
@@ -109,7 +108,6 @@ export const useAuth = () => {
         } finally {
             token.value = null;
             user.value = null;
-            localStorage.removeItem(JWT_COOKIE_NAME);
             clearCookie(JWT_COOKIE_NAME);
         }
     };
