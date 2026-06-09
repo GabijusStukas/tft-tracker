@@ -14,6 +14,7 @@ import type { BreadcrumbItem, NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { useAuth } from '@/composables/useAuth';
 
 interface Props {
     breadcrumbs?: BreadcrumbItem[];
@@ -24,7 +25,11 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const page = usePage();
-const auth = computed(() => page.props.auth);
+const pageAuth = computed(() => page.props.auth);
+const { user } = useAuth();
+const authUser = computed(() => {
+    return user.value ?? pageAuth.value?.user ?? null;
+});
 
 const isCurrentRoute = computed(() => (url: string) => page.url === url);
 
@@ -154,7 +159,7 @@ const rightNavItems: NavItem[] = [
                         </div>
                     </div>
 
-                    <DropdownMenu v-if="auth.user">
+                    <DropdownMenu v-if="authUser">
                         <DropdownMenuTrigger :as-child="true">
                             <Button
                                 variant="ghost"
@@ -162,15 +167,15 @@ const rightNavItems: NavItem[] = [
                                 class="relative size-10 w-auto rounded-full p-1 focus-within:ring-2 focus-within:ring-primary"
                             >
                                 <Avatar class="size-8 overflow-hidden rounded-full">
-                                    <AvatarImage v-if="auth.user.avatar" :src="auth.user.avatar" :alt="auth.user.name" />
+                                    <AvatarImage v-if="authUser.avatar" :src="authUser.avatar" :alt="authUser.name" />
                                     <AvatarFallback class="rounded-lg bg-neutral-200 font-semibold text-black dark:bg-neutral-700 dark:text-white">
-                                        {{ getInitials(auth.user?.name) }}
+                                        {{ getInitials(authUser?.name) }}
                                     </AvatarFallback>
                                 </Avatar>
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" class="w-56">
-                            <UserMenuContent :user="auth.user" />
+                            <UserMenuContent :user="authUser" />
                         </DropdownMenuContent>
                     </DropdownMenu>
                     <Link v-else :href="route('login')" class="flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent">

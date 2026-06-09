@@ -3,14 +3,18 @@ import UserInfo from '@/components/UserInfo.vue';
 import { DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { User } from '@/types';
 import { Link, router } from '@inertiajs/vue3';
+import { useAuth } from '@/composables/useAuth';
 import { LogOut, Settings } from 'lucide-vue-next';
 
 interface Props {
     user: User;
 }
 
-const handleLogout = () => {
-    router.flushAll();
+const { logout } = useAuth();
+
+const handleLogout = async () => {
+    await logout();
+    router.visit('/login');
 };
 
 defineProps<Props>();
@@ -33,9 +37,9 @@ defineProps<Props>();
     </DropdownMenuGroup>
     <DropdownMenuSeparator />
     <DropdownMenuItem :as-child="true">
-        <Link class="block w-full" method="post" :href="route('logout')" @click="handleLogout" as="button">
-            <LogOut class="mr-2 h-4 w-4" />
+        <button class="block w-full text-left cursor-pointer" @click="handleLogout">
+            <LogOut class="mr-2 h-4 w-4 inline" />
             Log out
-        </Link>
+        </button>
     </DropdownMenuItem>
 </template>

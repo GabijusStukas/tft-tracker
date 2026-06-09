@@ -2,12 +2,20 @@
 import { Button } from '@/components/ui/button';
 import { Head, Link } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { useAuth } from '@/composables/useAuth';
 import type { BreadcrumbItem } from '@/types';
 
 const processing = ref(false);
+const auth = useAuth();
+
+onMounted(() => {
+    if (auth.isAuthenticated.value) {
+        window.location.href = '/dashboard';
+    }
+});
 
 const redirectToGoogle = () => {
     processing.value = true;
@@ -37,7 +45,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                         </Link>
                         <div class="space-y-2 text-center">
                             <h1 class="text-xl font-medium">Log in to your account</h1>
-                            <p class="text-center text-sm text-muted-foreground">Please log in to continue.</p>
+                            <p class="text-center text-sm text-muted-foreground">Sign in with your Google account to continue.</p>
                         </div>
                     </div>
                     <Button :disabled="processing" @click="redirectToGoogle" class="mt-4 w-full google-login">
