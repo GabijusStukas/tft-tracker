@@ -17,7 +17,7 @@ class ProfileUpdateTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this
-            ->actingAs($user)
+            ->actingAs($user, 'api')
             ->get('/settings/profile');
 
         $response->assertOk();
@@ -33,7 +33,7 @@ class ProfileUpdateTest extends TestCase
         $newEmail = $this->faker->email();
 
         $response = $this
-            ->actingAs($user)
+            ->actingAs($user, 'api')
             ->patch('/settings/profile', [
                 'name' => 'Test User',
                 'email' => $newEmail,
@@ -55,7 +55,7 @@ class ProfileUpdateTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this
-            ->actingAs($user)
+            ->actingAs($user, 'api')
             ->patch('/settings/profile', [
                 'name' => 'Test User',
                 'email' => $user->email,
@@ -73,7 +73,7 @@ class ProfileUpdateTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this
-            ->actingAs($user)
+            ->actingAs($user, 'api')
             ->delete('/settings/profile', [
                 'email' => $user->email,
             ]);
@@ -91,7 +91,7 @@ class ProfileUpdateTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this
-            ->actingAs($user)
+            ->actingAs($user, 'api')
             ->from('/settings/profile')
             ->delete('/settings/profile', [
                 'email' => 'wrong-email@example.com',
