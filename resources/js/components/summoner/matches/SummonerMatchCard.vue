@@ -95,7 +95,6 @@ function getTraitIconStyle(style: number): Record<string, string> {
                     <p class="mt-2 text-xs text-muted-foreground">{{ formatMatchDate(props.match.date) }}</p>
                 </div>
             </div>
-            <p class="text-sm font-semibold" :class="props.match.lp.startsWith('+') ? 'text-emerald-500' : 'text-rose-500'">{{ props.match.lp }}</p>
         </div>
 
         <div class="mt-3 flex gap-2 overflow-x-auto pb-1">

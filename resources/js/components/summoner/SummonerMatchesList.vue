@@ -79,7 +79,6 @@ async function loadMatches() {
                             style: trait.style ?? 0,
                             num_units: trait.num_units ?? 0,
                         })),
-                    lp: `${placement <= 4 ? '+' : '-'}${damage} DMG`,
                     date: formatUtcTimestamp(match?.match_created_at ?? match?.raw_data?.info?.game_datetime ?? match?.raw_data?.info?.gameCreation),
                     units: (summonerParticipant.units ?? []).map((unit: any) => ({
                         character_id: unit.character_id,

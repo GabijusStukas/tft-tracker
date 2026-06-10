@@ -16,7 +16,6 @@ export interface UnitItem {
 export interface MatchItem {
     placement: number;
     traits: TraitItem[];
-    lp: string;
     date: string;
     units: UnitItem[];
 }
