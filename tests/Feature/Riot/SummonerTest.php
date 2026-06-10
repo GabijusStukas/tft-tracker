@@ -59,14 +59,13 @@ class SummonerTest extends TestCase
         $response = $this->getJson(route('summoner.search', [
             'username' => 'TestUser',
             'tag_line' => 'EUW',
-            'region' => 'euw'
+            'region' => 'euw1'
         ]));
 
         $response->assertStatus(200)
             ->assertJson([
                 'game_name' => 'TestUser',
                 'tag_line' => 'EUW',
-                'puuid' => 'test-puuid',
                 'region' => 'euw1',
                 'game' => 'tft'
             ]);
@@ -99,7 +98,7 @@ class SummonerTest extends TestCase
         $response = $this->getJson(route('summoner.search', [
             'username' => 'NonExistentUser',
             'tag_line' => 'EUW',
-            'region' => 'euw'
+            'region' => 'euw1'
         ]));
 
         $response->assertStatus(404)
@@ -121,19 +120,24 @@ class SummonerTest extends TestCase
         $this->actingAs(User::factory()->create(), 'api');
 
         /** @var RiotAccount $summoner */
-        $summoner = RiotAccount::factory()->create();
+        $summoner = RiotAccount::factory()->create([
+            'game' => 'tft',
+            'region' => 'euw1',
+        ]);
 
         $response = $this->getJson(route('summoner.search', [
             'username' => $summoner->game_name,
             'tag_line' => $summoner->tag_line,
-            'region' => 'na'
+            'region' => $summoner->region,
+            'game' => $summoner->game,
         ]));
 
         $response->assertStatus(200)
             ->assertJson([
                 'game_name' => $summoner->game_name,
                 'tag_line' => $summoner->tag_line,
-                'puuid' => $summoner->puuid
+                'region' => $summoner->region,
+                'game' => $summoner->game,
             ]);
 
         $this->assertDatabaseHas('riot_accounts', [

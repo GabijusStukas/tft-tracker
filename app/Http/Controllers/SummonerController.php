@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RiotAccountSearchRequest;
+use App\Http\Resources\SummonerDetailsResource;
 use App\Http\Resources\SummonerResource;
 use App\Services\Riot\SummonerService;
 use Exception;
@@ -24,7 +25,9 @@ class SummonerController extends Controller
     public function index(RiotAccountSearchRequest $request): JsonResponse
     {
         try {
-            return response()->json(new SummonerResource($this->summonerService->getSummonerDetails($request->toDTO())));
+            return response()->json(
+                new SummonerDetailsResource($this->summonerService->getSummonerDetails($request->toDTO()))
+            );
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 400);
         }

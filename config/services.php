@@ -44,6 +44,7 @@ return [
     'riot' => [
         'api_url'        => env('RIOT_API_URL', 'https://%s.api.riotgames.com'),
         'api_key'        => env('RIOT_API_KEY'),
-        'default_region' => env('RIOT_DEFAULT_REGION', 'europe')
+        'default_region' => env('RIOT_DEFAULT_REGION', 'europe'),
+        'datadragon_url' => env('RIOT_DATADRAGON_URL', 'https://ddragon.leagueoflegends.com'),
     ]
 ];

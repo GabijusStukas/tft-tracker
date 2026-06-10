@@ -47,7 +47,7 @@ const topComps = [
 	<AppLayout :breadcrumbs="breadcrumbs">
 		<div class="min-h-full bg-[#f3f5f8] p-4 dark:bg-sidebar">
 			<div class="mx-auto flex w-full max-w-7xl flex-col gap-4">
-				<SummonerProfileCard :username="props.username" :tag-line="props.tagLine" :region="props.region" />
+				<SummonerProfileCard :game="props.game" :username="props.username" :tag-line="props.tagLine" :region="props.region" />
 				<SummonerTabs />
 
 				<section class="grid gap-4 lg:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)]">

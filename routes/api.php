@@ -13,7 +13,7 @@ Route::middleware(AuthenticateWithJwt::class)->group(function () {
     Route::get('summoners/search', [SummonerController::class, 'search'])->name('summoner.search');
 
     Route::prefix('{game}/summoners/{region}/{username}-{tag_line}')->group(function () {
-        Route::get('profile', [SummonerController::class, 'index'])->name('summoner.matches.index');
-        Route::get('matches', [SummonerMatchesController::class, 'index'])->name('summoner.matches.index');
+        Route::get('profile', [SummonerController::class, 'index'])->name('summoner.profile');
+        Route::get('matches', [SummonerMatchesController::class, 'index'])->name('summoner.matches');
     });
 });

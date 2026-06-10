@@ -14,25 +14,12 @@ class JwtRefreshController extends Controller
     public function refresh(): JsonResponse
     {
         $token = Auth::guard('api')->refresh();
-        $ttlMinutes = Auth::guard('api')->factory()->getTTL();
 
-        return response()
-            ->json([
-                'access_token' => $token,
-                'token_type' => 'bearer',
-                'expires_in' => $ttlMinutes * 60,
-            ])
-            ->cookie(
-                'jwt_token',
-                $token,
-                $ttlMinutes,
-                '/',
-                null,
-                request()->isSecure(),
-                false,
-                false,
-                'lax'
-            );
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => Auth::guard('api')->factory()->getTTL() * 60,
+        ]);
     }
 }
 

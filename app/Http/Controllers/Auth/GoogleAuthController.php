@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
+use Inertia\Response;
 use Laravel\Socialite\Facades\Socialite;
 use Throwable;
 
@@ -21,9 +23,9 @@ class GoogleAuthController extends Controller
     }
 
     /**
-     * Handle the callback from Google, persist JWT cookie and redirect.
+     * Handle the callback from Google and return JWT token via Inertia.
      */
-    public function callback(): RedirectResponse
+    public function callback(): Response|RedirectResponse
     {
         try {
             $googleUser = Socialite::driver('google')->user();
@@ -43,18 +45,10 @@ class GoogleAuthController extends Controller
 
         $token = Auth::guard('api')->login($user);
 
-        $ttlMinutes = Auth::guard('api')->factory()->getTTL();
-
-        return redirect()->route('dashboard')->cookie(
-            'jwt_token',
-            $token,
-            $ttlMinutes,
-            '/',
-            null,
-            request()->isSecure(),
-            false,
-            false,
-            'lax'
-        );
+        return Inertia::render('auth/Callback', [
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => Auth::guard('api')->factory()->getTTL() * 60,
+        ]);
     }
 }

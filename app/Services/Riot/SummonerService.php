@@ -9,6 +9,7 @@ use App\Models\RiotSummoner;
 use App\Repositories\RiotMatchRepository;
 use App\Repositories\RiotRegionRepository;
 use App\Repositories\RiotAccountRepository;
+use App\Repositories\RiotSummonerRepository;
 use App\Services\Riot\API\AccountService;
 use App\Services\Riot\API\RiotServiceFactory;
 use Illuminate\Support\Collection;
@@ -27,10 +28,11 @@ class SummonerService
      * @param RiotMatchRepository $riotMatchRepository
      */
     public function __construct(
-        private RiotServiceFactory    $serviceFactory,
-        private RiotAccountRepository $riotAccountRepository,
-        private RiotRegionRepository  $riotRegionRepository,
-        private RiotMatchRepository   $riotMatchRepository
+        private RiotServiceFactory     $serviceFactory,
+        private RiotAccountRepository  $riotAccountRepository,
+        private RiotRegionRepository   $riotRegionRepository,
+        private RiotMatchRepository    $riotMatchRepository,
+        private RiotSummonerRepository $riotSummonerRepository
     ) {
     }
 
@@ -83,10 +85,8 @@ class SummonerService
     {
         $account = $this->getSummonerByName($DTO);
 
-        $summoner = $this->serviceFactory->summoner($account->region)->getSummonerDetails($account->puuid);
+        $summonerData = $this->serviceFactory->summoner($account->region)->getSummonerDetails($account->puuid);
 
-        dd($summoner);
-
-        return $account;
+        return $this->riotSummonerRepository->createOrUpdate($account, $summonerData);
     }
 }
