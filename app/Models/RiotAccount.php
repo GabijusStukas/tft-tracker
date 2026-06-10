@@ -54,4 +54,12 @@ class RiotAccount extends Model
     {
         return $this->hasMany(RiotMatch::class, 'account_id', 'id');
     }
+
+    /**
+     * @return HasOne
+     */
+    public function summoner(): HasOne
+    {
+        return $this->hasOne(RiotSummoner::class, 'account_id', 'id');
+    }
 }

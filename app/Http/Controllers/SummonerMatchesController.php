@@ -3,12 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RiotAccountSearchRequest;
-use App\Http\Resources\SummonerResource;
 use App\Services\Riot\SummonerService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 
-class SummonerController extends Controller
+class SummonerMatchesController extends Controller
 {
     /**
      * @param SummonerService $summonerService
@@ -24,20 +23,7 @@ class SummonerController extends Controller
     public function index(RiotAccountSearchRequest $request): JsonResponse
     {
         try {
-            return response()->json(new SummonerResource($this->summonerService->getSummonerDetails($request->toDTO())));
-        } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 400);
-        }
-    }
-
-    /**
-     * @param RiotAccountSearchRequest $request
-     * @return JsonResponse
-     */
-    public function search(RiotAccountSearchRequest $request): JsonResponse
-    {
-        try {
-            return response()->json(new SummonerResource($this->summonerService->getSummonerByName($request->toDTO())));
+            return response()->json($this->summonerService->getSummonerMatches($request->toDTO()));
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 400);
         }

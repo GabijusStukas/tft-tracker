@@ -6,7 +6,7 @@ use App\Http\Exceptions\RiotApiException;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class TFTService
+class SummonerService
 {
     /**
      * @param RiotClient $client
@@ -20,16 +20,16 @@ class TFTService
      * @return array
      * @throws RiotApiException
      */
-    public function getMatchesByPuuid(string $puuid): array
+    public function getSummonerDetails(string $puuid): array
     {
         try {
-            return $this->client->request('GET',"tft/match/v1/matches/by-puuid/$puuid/ids");
+            return $this->client->request('GET',"lol/summoner/v4/summoners/by-puuid/$puuid");
         } catch (Throwable $exception) {
             Log::info('Riot API error', [
                 'message' => $exception->getMessage(),
                 'puuid'   => $puuid
             ]);
-            throw new RiotApiException('Could not get matches for summoner', 404);
+            throw new RiotApiException('Could not get summoner details', 404);
         }
     }
 }

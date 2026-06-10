@@ -5,6 +5,7 @@ namespace App\Services\Riot;
 use App\DTO\RiotAccountSearchDTO;
 use App\Http\Exceptions\RiotApiException;
 use App\Models\RiotAccount;
+use App\Models\RiotSummoner;
 use App\Repositories\RiotMatchRepository;
 use App\Repositories\RiotRegionRepository;
 use App\Repositories\RiotAccountRepository;
@@ -71,5 +72,21 @@ class SummonerService
             ->getMatchesByPuuid($account->puuid);
 
         return $this->riotMatchRepository->upsert($matches, $account);
+    }
+
+    /**
+     * @param RiotAccountSearchDTO $DTO
+     * @return RiotSummoner
+     * @throws RiotApiException
+     */
+    public function getSummonerDetails(RiotAccountSearchDTO $DTO): RiotSummoner
+    {
+        $account = $this->getSummonerByName($DTO);
+
+        $summoner = $this->serviceFactory->summoner($account->region)->getSummonerDetails($account->puuid);
+
+        dd($summoner);
+
+        return $account;
     }
 }

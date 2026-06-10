@@ -5,11 +5,33 @@ namespace App\DTO;
 class RiotAccountSearchDTO
 {
     /**
+     * @param string $game
+     * @param string $region
      * @param string $username
      * @param string|null $tagLine
      */
-    public function __construct(private string $username, private ?string $tagLine = null)
+    public function __construct(
+        private string $game,
+        private string $region,
+        private string $username,
+        private ?string $tagLine = null
+    ) {
+    }
+
+    /**
+     * @return string
+     */
+    public function getGame(): string
     {
+        return $this->game;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRegion(): string
+    {
+        return $this->region;
     }
 
     /**

@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import axios from 'axios'
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { type BreadcrumbItem } from '@/types';
 import { LoaderCircle } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,14 @@ async function searchSummoner() {
                 tag_line: form.value.tag_line
             }
         })
-        result.value = response.data
+        const summoner = response.data?.data ?? response.data
+
+        router.visit(route('summoner', {
+            game: summoner.game,
+            region: summoner.region,
+            username: summoner.game_name,
+            tagLine: summoner.tag_line,
+        }))
     } catch (e) {
         error.value = e.response?.data?.message || 'An error occurred.'
     } finally {
