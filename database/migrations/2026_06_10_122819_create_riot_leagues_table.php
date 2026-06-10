@@ -11,22 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('riot_matches', function (Blueprint $table) {
+        Schema::create('riot_leagues', function (Blueprint $table) {
             $table->id();
 
-            $table->unsignedBigInteger('account_id')->index();
-            $table->string('match_id')->index();
-            $table->json('raw_data');
+            $table->unsignedBigInteger('account_id');
 
-            $table->timestamp('match_created_at');
-            $table->timestamps();
 
             $table->foreign('account_id')
                 ->references('id')
                 ->on('riot_accounts')
                 ->onDelete('cascade');
 
-            $table->unique(['account_id', 'match_id']);
+            $table->timestamps();
         });
     }
 
@@ -35,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('riot_matches');
+        Schema::dropIfExists('riot_leagues');
     }
 };

@@ -12,15 +12,11 @@ use App\Repositories\RiotAccountRepository;
 use App\Repositories\RiotSummonerRepository;
 use App\Services\Riot\API\AccountService;
 use App\Services\Riot\API\RiotServiceFactory;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
-class SummonerService
+class RiotService
 {
-    /**
-     * @var AccountService
-     */
-    private AccountService $accountService;
-
     /**
      * @param RiotServiceFactory $serviceFactory
      * @param RiotAccountRepository $riotAccountRepository
@@ -47,7 +43,7 @@ class SummonerService
     {
         $account = $this->riotAccountRepository->getAccount($DTO);
 
-        if ($account) {
+        if ($account && $DTO->shouldRefresh() === false) {
             return $account;
         }
 
@@ -69,11 +65,26 @@ class SummonerService
     {
         $account = $this->getSummonerByName($DTO);
 
-        $matches = $this->serviceFactory
-            ->tft($this->riotRegionRepository->getClusterByRegion($account->region))
-            ->getMatchesByPuuid($account->puuid);
+        if ( $account->matches->isNotEmpty() && $DTO->shouldRefresh() === false ) {
+            return $this->riotMatchRepository->getMatchesByAccountId($account->id);
+        }
 
-        return $this->riotMatchRepository->upsert($matches, $account);
+        $tftService = $this->serviceFactory->tft($this->riotRegionRepository->getClusterByRegion($account->region));
+
+        $matches = $tftService->getMatchesByPuuid($account->puuid);
+
+        $result = [];
+        foreach ($matches as $match) {
+            $matchData = $tftService->getMatch($match);
+            $result[] = [
+                'account_id'       => $account->id,
+                'match_id'         => $match,
+                'raw_data'         => json_encode($matchData),
+                'match_created_at' => Carbon::createFromTimestampMs($matchData['info']['gameCreation'])->utc(),
+            ];
+        }
+
+        return $this->riotMatchRepository->upsert($result);
     }
 
     /**
@@ -84,6 +95,28 @@ class SummonerService
     public function getSummonerDetails(RiotAccountSearchDTO $DTO): RiotSummoner
     {
         $account = $this->getSummonerByName($DTO);
+
+        if ( $account->summoner && $DTO->shouldRefresh() === false ) {
+            return $account->summoner;
+        }
+
+        $summonerData = $this->serviceFactory->summoner($account->region)->getSummonerDetails($account->puuid);
+
+        return $this->riotSummonerRepository->createOrUpdate($account, $summonerData);
+    }
+
+    /**
+     * @param RiotAccountSearchDTO $DTO
+     * @return RiotSummoner
+     * @throws RiotApiException
+     */
+    public function getAccountLeague(RiotAccountSearchDTO $DTO): RiotSummoner
+    {
+        $account = $this->getSummonerByName($DTO);
+
+        if ( $DTO->shouldRefresh() === false ) {
+            return $this->riotSummonerRepository->getByAccountId($account->id);
+        }
 
         $summonerData = $this->serviceFactory->summoner($account->region)->getSummonerDetails($account->puuid);
 

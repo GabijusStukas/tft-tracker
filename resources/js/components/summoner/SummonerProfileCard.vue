@@ -21,7 +21,7 @@ async function loadSummonerProfile() {
     isProfileLoading.value = true;
 
     try {
-        const response = await axios.get(route('summoner.profile', {
+        const response = await axios.get(route('riot.account.index', {
             game: props.game,
             region: props.region,
             username: props.username,

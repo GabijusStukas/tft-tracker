@@ -17,7 +17,7 @@ return [
     'algorithm' => env('JWT_ALGORITHM', 'HS256'),
     'required_claims' => ['iss', 'iat', 'exp', 'nbf', 'sub', 'jti'],
     'leeway' => env('JWT_LEEWAY', 0),
-    'ttl' => env('JWT_TTL', 60),
+    'ttl' => env('JWT_TTL', 6000),
     'refresh_ttl' => env('JWT_REFRESH_TTL', 20160),
     'jwt_provider' => 'Tymon\JwtAuth\Providers\JWT\Namshi',
     'auth_provider' => 'Tymon\JwtAuth\Providers\Auth\Illuminate',

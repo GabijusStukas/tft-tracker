@@ -19,7 +19,7 @@ async function searchSummoner() {
     error.value = null
     loading.value = true
     try {
-        const response = await axios.get(route('summoner.search'), {
+        const response = await axios.get(route('riot.account.search'), {
             params: {
                 username: form.value.username,
                 tag_line: form.value.tag_line

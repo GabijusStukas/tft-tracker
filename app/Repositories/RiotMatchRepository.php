@@ -2,26 +2,50 @@
 
 namespace App\Repositories;
 
-use App\Models\RiotAccount;
 use App\Models\RiotMatch;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Builder;
 
 class RiotMatchRepository
 {
     /**
      * @param array $matches
-     * @param RiotAccount $account
      * @return Collection
      */
-    public function upsert(array $matches, RiotAccount $account): Collection
+    public function upsert(array $matches): Collection
     {
-        $records = collect($matches)->map(fn(string $matchId) => [
-            'account_id' => $account->id,
-            'match_id' => $matchId,
-        ])->toArray();
+        RiotMatch::query()->upsert($matches, ['account_id', 'match_id']);
 
-        RiotMatch::query()->upsert($records, ['account_id', 'match_id']);
+        $matchesByAccount = collect($matches)
+            ->groupBy('account_id')
+            ->map(fn ($accountMatches) => $accountMatches->pluck('match_id')->unique()->values());
 
-        return collect($matches);
+        return RiotMatch::query()
+            ->where(function (Builder $query) use ($matchesByAccount) {
+                foreach ($matchesByAccount as $accountId => $matchIds) {
+                    $query->orWhere(function (Builder $accountQuery) use ($accountId, $matchIds) {
+                        $accountQuery
+                            ->where('account_id', (int) $accountId)
+                            ->whereIn('match_id', $matchIds->all());
+                    });
+                }
+            })
+            ->limit(10)
+            ->latest('match_created_at')
+            ->get();
+    }
+
+    /**
+     * @param int $accountId
+     * @return Collection
+     */
+    public function getMatchesByAccountId(int $accountId): Collection
+    {
+        return RiotMatch::query()
+            ->with('account')
+            ->where('account_id', $accountId)
+            ->limit(10)
+            ->latest('match_created_at')
+            ->get();
     }
 }

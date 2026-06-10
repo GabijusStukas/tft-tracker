@@ -14,7 +14,7 @@ use Illuminate\Support\Carbon;
  * @property int $account_id
  * @property int $summoner_level
  * @property int $profile_icon_id
- * @property RiotAccount $riotAccount
+ * @property RiotAccount $account
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -39,7 +39,7 @@ class RiotSummoner extends Model
     /**
      * @return BelongsTo
      */
-    public function riotAccount(): BelongsTo
+    public function account(): BelongsTo
     {
         return $this->belongsTo(RiotAccount::class, 'account_id', 'id');
     }
