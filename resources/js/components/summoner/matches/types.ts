@@ -11,11 +11,15 @@ export interface UnitItem {
     icon?: string | null;
     rarity: number;
     tier: number;
+    items: Array<{
+        icon?: string | null;
+    }>;
 }
 
 export interface MatchItem {
     placement: number;
     traits: TraitItem[];
+    gameType: string;
     date: string;
     units: UnitItem[];
 }

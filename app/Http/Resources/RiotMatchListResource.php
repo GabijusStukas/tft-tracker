@@ -18,7 +18,8 @@ class RiotMatchListResource extends RiotMatchResource
             fn($participant) => $participant['puuid'] === $this->account->puuid
         );
 
-        $data['info']['participants'] = $this->withUnitIcons([$mainParticipant]);
+        $data['info']['participants'] = $this->appendDataDragon([$mainParticipant]);
+        $data['info']['queue_name'] = $this->getQueueName($data['info']['queueId']);
 
         return [
             'puuid'            => $this->account->puuid,

@@ -66,7 +66,6 @@ async function loadMatches() {
                 }
 
                 const placement = summonerParticipant.placement ?? 8;
-                const damage = summonerParticipant.total_damage_to_players ?? 0;
 
                 return {
                     placement,
@@ -79,6 +78,7 @@ async function loadMatches() {
                             style: trait.style ?? 0,
                             num_units: trait.num_units ?? 0,
                         })),
+                    gameType: String(match?.raw_data?.info?.queue_name ?? ''),
                     date: formatUtcTimestamp(match?.match_created_at ?? match?.raw_data?.info?.game_datetime ?? match?.raw_data?.info?.gameCreation),
                     units: (summonerParticipant.units ?? []).map((unit: any) => ({
                         character_id: unit.character_id,
@@ -86,6 +86,9 @@ async function loadMatches() {
                         icon: unit.icon ?? null,
                         rarity: Number(unit.rarity ?? 0),
                         tier: Number(unit.tier ?? 0),
+                        items: (unit.items ?? []).slice(0, 3).map((item: any) => ({
+                            icon: item.icon ?? null,
+                        })),
                     })),
                 };
             })

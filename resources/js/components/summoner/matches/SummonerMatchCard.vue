@@ -59,6 +59,10 @@ function getTraitIconStyle(style: number): Record<string, string> {
         filter: `drop-shadow(0 0 2px ${accent})`,
     };
 }
+
+function getVisibleUnitItems(items: Array<{ icon?: string | null }>): Array<{ icon?: string | null }> {
+    return items.filter((item) => Boolean(item.icon)).slice(0, 3);
+}
 </script>
 
 <template>
@@ -66,10 +70,13 @@ function getTraitIconStyle(style: number): Record<string, string> {
         <div class="flex items-center justify-between gap-4">
             <div class="flex items-center gap-4">
                 <div
-                    class="h-12 w-12 rounded-lg text-center text-lg font-bold leading-[48px]"
+                    class="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-lg text-center font-bold"
                     :class="props.match.placement <= 4 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'"
                 >
-                    #{{ props.match.placement }}
+                    <span class="text-lg leading-none">#{{ props.match.placement }}</span>
+                    <span class="mt-0.5 text-[9px] font-semibold uppercase leading-none opacity-80">
+                        {{ props.match.gameType || '-' }}
+                    </span>
                 </div>
                 <div class="min-w-0">
                     <div class="flex flex-wrap gap-1">
@@ -123,6 +130,15 @@ function getTraitIconStyle(style: number): Record<string, string> {
                 <p class="w-full truncate text-center text-[10px] leading-tight text-muted-foreground">
                     {{ unit.name ?? getUnitName(unit.character_id) }}
                 </p>
+                <div v-if="(unit.items ?? []).length > 0" class="mt-0.5 flex items-center justify-center gap-0.5">
+                    <div
+                        v-for="(item, itemIndex) in getVisibleUnitItems(unit.items ?? [])"
+                        :key="`${unit.character_id}-item-${itemIndex}`"
+                        class="h-4 w-4 overflow-hidden rounded-[3px] border border-sidebar-border/60 bg-muted/60"
+                    >
+                        <img :src="item.icon ?? ''" alt="Item" class="h-full w-full object-cover" />
+                    </div>
+                </div>
             </div>
         </div>
     </article>

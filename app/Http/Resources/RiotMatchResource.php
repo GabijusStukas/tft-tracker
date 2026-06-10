@@ -11,13 +11,27 @@ use Throwable;
 class RiotMatchResource extends JsonResource
 {
     /**
+     * @var DataDragonService|\Illuminate\Foundation\Application|mixed|object
+     */
+    protected DataDragonService $dataDragonService;
+
+    /**
+     * @param $resource
+     */
+    public function __construct($resource)
+    {
+        parent::__construct($resource);
+        $this->dataDragonService = app(DataDragonService::class);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
         $data = $this->raw_data;
         $participants = $data['info']['participants'] ?? [];
-        $data['info']['participants'] = $this->withUnitIcons($participants);
+        $data['info']['participants'] = $this->appendDataDragon($participants);
 
         return [
             'puuid'            => $this->account->puuid,
@@ -31,18 +45,21 @@ class RiotMatchResource extends JsonResource
      * @param array<int, array<string, mixed>> $participants
      * @return array<int, array<string, mixed>>
      */
-    protected function withUnitIcons(array $participants): array
+    protected function appendDataDragon(array $participants): array
     {
-        $dataDragonService = app(DataDragonService::class);
+        return array_map(function (array $participant): array {
+            $participant['units'] = array_map(function (array $unit): array {
+                $data = $this->withDataDragon($unit['character_id'], DataDragonIconType::TFT_CHAMPION);
 
-        return array_map(function (array $participant) use ($dataDragonService): array {
-            $participant['units'] = array_map(function (array $unit) use ($dataDragonService): array {
-                $data = $this->withDataDragon($unit['character_id'], $dataDragonService, DataDragonIconType::TFT_CHAMPION);
+                foreach ($unit['itemNames'] as $itemName) {
+                    $data['items'][] = $this->withDataDragon($itemName, DataDragonIconType::TFT_ITEM);
+                }
+
                 return array_merge($unit, $data);
             }, $participant['units']);
 
-            $participant['traits'] = array_map(function (array $trait) use ($dataDragonService): array {
-                $data = $this->withDataDragon($trait['name'], $dataDragonService, DataDragonIconType::TFT_TRAIT);
+            $participant['traits'] = array_map(function (array $trait): array {
+                $data = $this->withDataDragon($trait['name'], DataDragonIconType::TFT_TRAIT);
                 return array_merge($trait, $data);
             }, $participant['traits']);
 
@@ -52,21 +69,31 @@ class RiotMatchResource extends JsonResource
 
     /**
      * @param string $entityId
-     * @param DataDragonService $dataDragonService
      * @param DataDragonIconType $type
      * @return array<string, mixed>
      */
-    protected function withDataDragon(string $entityId, DataDragonService $dataDragonService, DataDragonIconType $type): array
+    protected function withDataDragon(string $entityId, DataDragonIconType $type): array
     {
         try {
-            $cdnData = $dataDragonService->getEntityCdnData($entityId, $type);
+            $cdnData = $this->dataDragonService->getEntityCdnData($entityId, $type);
 
             $unit['name'] = $cdnData['name'];
-            $unit['icon'] = $dataDragonService->getCdnImageUrl($entityId, $type);
+            $unit['icon'] = $this->dataDragonService->getCdnImageUrl($entityId, $type);
         } catch (Throwable) {
             $unit['icon'] = null;
         }
 
         return $unit;
+    }
+
+    /**
+     * @param string $queueId
+     * @return string
+     */
+    protected function getQueueName(string $queueId): string
+    {
+        $queueData = $this->dataDragonService->getCdnData(DataDragonIconType::TFT_QUEUES);
+
+        return $queueData['data'][$queueId]['name'] ?? 'Unknown Queue';
     }
 }
