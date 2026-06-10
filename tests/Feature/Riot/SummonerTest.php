@@ -56,7 +56,7 @@ class SummonerTest extends TestCase
 
         $this->app->instance(RiotClient::class, $this->riotClient);
 
-        $response = $this->getJson(route('summoner.search', [
+        $response = $this->getJson(route('riot.account.search', [
             'username' => 'TestUser',
             'tag_line' => 'EUW',
             'region' => 'euw1'
@@ -95,7 +95,7 @@ class SummonerTest extends TestCase
 
         $this->app->instance(RiotClient::class, $this->riotClient);
 
-        $response = $this->getJson(route('summoner.search', [
+        $response = $this->getJson(route('riot.account.search', [
             'username' => 'NonExistentUser',
             'tag_line' => 'EUW',
             'region' => 'euw1'
@@ -125,7 +125,7 @@ class SummonerTest extends TestCase
             'region' => 'euw1',
         ]);
 
-        $response = $this->getJson(route('summoner.search', [
+        $response = $this->getJson(route('riot.account.search', [
             'username' => $summoner->game_name,
             'tag_line' => $summoner->tag_line,
             'region' => $summoner->region,
