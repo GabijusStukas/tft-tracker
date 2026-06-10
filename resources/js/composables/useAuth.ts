@@ -43,42 +43,52 @@ const clearCookie = (name: string): void => {
 
 const token = ref<string | null>(localStorage.getItem(JWT_COOKIE_NAME) ?? getCookie(JWT_COOKIE_NAME));
 const user = ref<User | null>(null);
-const isAuthenticated = computed(() => !!token.value);
+const isAuthenticated = computed(() => !!token.value && !!user.value);
 
 if (token.value && !getCookie(JWT_COOKIE_NAME)) {
     setCookie(JWT_COOKIE_NAME, token.value);
 }
 
+let fetchUserPromise: Promise<User | null> | null = null;
+
 const fetchUserFromServer = async () => {
     if (!token.value) return null;
 
-    try {
-        const resp = await fetch('/auth/user', {
-            headers: {
-                'Authorization': `Bearer ${token.value}`,
-                'Content-Type': 'application/json',
-            },
-        });
+    if (fetchUserPromise) return fetchUserPromise;
 
-        if (!resp.ok) {
+    fetchUserPromise = (async () => {
+        try {
+            const resp = await fetch('/auth/user', {
+                headers: {
+                    'Authorization': `Bearer ${token.value}`,
+                    'Accept': 'application/json',
+                },
+            });
+
+            if (!resp.ok) {
+                token.value = null;
+                clearCookie(JWT_COOKIE_NAME);
+                return null;
+            }
+
+            const data = await resp.json();
+            user.value = data;
+            return data;
+        } catch (e) {
+            console.error('Failed to fetch user from server', e);
             return null;
+        } finally {
+            fetchUserPromise = null;
         }
+    })();
 
-        const data = await resp.json();
-        user.value = data;
-        return data;
-    } catch (e) {
-        console.error('Failed to fetch user from server', e);
-        return null;
-    }
+    return fetchUserPromise;
 };
 
 export const useAuth = () => {
-    (async () => {
-        if (token.value && !user.value) {
-            await fetchUserFromServer();
-        }
-    })();
+    if (token.value && !user.value) {
+        fetchUserFromServer();
+    }
 
     const setToken = (newToken: string) => {
         token.value = newToken;

@@ -3,9 +3,9 @@
 namespace Tests\Feature\Settings;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use JsonException;
 use Tests\TestCase;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class ProfileUpdateTest extends TestCase
 {
@@ -71,11 +71,14 @@ class ProfileUpdateTest extends TestCase
     public function test_user_can_delete_their_account()
     {
         $user = User::factory()->create();
+        $token = JWTAuth::fromUser($user);
 
         $response = $this
             ->actingAs($user, 'api')
             ->delete('/settings/profile', [
                 'email' => $user->email,
+            ], [
+                'Authorization' => 'Bearer ' . $token,
             ]);
 
         $response
