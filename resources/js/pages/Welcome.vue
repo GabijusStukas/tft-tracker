@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import axios from 'axios'
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { type BreadcrumbItem } from '@/types';
 import { LoaderCircle } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
+import { useRiotApi } from '@/composables/useRiotApi';
+
+const { searchRiotAccount } = useRiotApi();
 
 const form = ref({
     username: '',
@@ -19,13 +21,7 @@ async function searchSummoner() {
     error.value = null
     loading.value = true
     try {
-        const response = await axios.get(route('riot.account.search'), {
-            params: {
-                username: form.value.username,
-                tag_line: form.value.tag_line
-            }
-        })
-        const summoner = response.data?.data ?? response.data
+        const summoner = await searchRiotAccount(form.value.username, form.value.tag_line)
 
         router.visit(route('summoner', {
             game: summoner.game,
