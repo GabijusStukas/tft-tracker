@@ -14,6 +14,8 @@ class RiotAccountRepository
     public function getAccount(RiotAccountSearchDTO $DTO): ?RiotAccount
     {
         return RiotAccount::query()
+            ->where('game', $DTO->getGame())
+            ->where('region', $DTO->getRegion())
             ->where('game_name', $DTO->getUsername())
             ->where('tag_line', $DTO->getTagLine())
             ->first();

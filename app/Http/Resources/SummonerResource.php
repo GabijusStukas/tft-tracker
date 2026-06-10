@@ -15,7 +15,6 @@ class SummonerResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'puuid'     => $this->puuid,
             'game_name' => $this->game_name,
             'tag_line'  => $this->tag_line,
             'game'      => $this->game,

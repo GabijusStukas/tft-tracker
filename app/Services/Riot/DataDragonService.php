@@ -2,57 +2,61 @@
 
 namespace App\Services\Riot;
 
-use App\DTO\RiotAccountSearchDTO;
-use App\Http\Exceptions\RiotApiException;
-use App\Models\RiotAccount;
-use App\Repositories\RiotMatchRepository;
-use App\Repositories\RiotRegionRepository;
-use App\Repositories\RiotAccountRepository;
-use App\Services\Riot\API\AccountService;
-use App\Services\Riot\API\RiotServiceFactory;
+use App\Services\Riot\API\DataDragonClient;
+use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 
 class DataDragonService
 {
-    /**
-     * @var AccountService
-     */
-    private AccountService $accountService;
+	public function __construct(private DataDragonClient $dataDragonClient)
+	{
+	}
 
-    /**
-     * @param RiotServiceFactory $serviceFactory
-     * @param RiotAccountRepository $riotAccountRepository
-     * @param RiotRegionRepository $riotRegionRepository
-     * @param RiotMatchRepository $riotMatchRepository
-     */
-    public function __construct(
-        private RiotServiceFactory    $serviceFactory,
-        private RiotAccountRepository $riotAccountRepository,
-        private RiotRegionRepository  $riotRegionRepository,
-        private RiotMatchRepository   $riotMatchRepository
-    ) {
-        $this->accountService = $serviceFactory->account();
+	/**
+	 * @return string
+	 */
+    public function getLatestVersion(): string
+    {
+        return Cache::remember('riot.datadragon.latest_version', now()->addHours(12), function () {
+            $versions = $this->dataDragonClient->request('GET', 'api/versions.json');
+
+            if (empty($versions[0])) {
+                throw new RuntimeException('Invalid Data Dragon versions response.');
+            }
+
+            return (string) $versions[0];
+        });
     }
 
     /**
-     * Get summoner information by summoner name
-     *
-     * @param RiotAccountSearchDTO $DTO
-     * @return RiotAccount
-     * @throws RiotApiException
+     * @param int $profileIconId
+     * @param string|null $version
+     * @return string
+     * @throws GuzzleException
      */
-    public function getSummonerByName(RiotAccountSearchDTO $DTO): RiotAccount
+    public function getSummonerIconUrl(int $profileIconId, ?string $version = null): string
     {
-        $account = $this->riotAccountRepository->getAccount($DTO);
+        $resolvedVersion = $version ?? $this->getLatestVersion();
+        $filename = sprintf('%d.png', $profileIconId);
+        $relativePath = sprintf('riot/%s/images/%s', $resolvedVersion, $filename);
+        $disk = Storage::disk('public');
 
-        if ($account) {
-            return $account;
+        if (! $disk->exists($relativePath)) {
+            $response = $this->dataDragonClient->requestImage('GET', sprintf('cdn/%s/img/profileicon/%s', $resolvedVersion, $filename), [
+                'headers' => [
+                    'Accept' => 'image/png',
+                ],
+            ]);
+
+            if ($response->getStatusCode() !== 200) {
+                throw new RuntimeException('Unable to download Data Dragon profile icon.');
+            }
+
+            $disk->put($relativePath, $response->getBody()->getContents());
         }
 
-        $accountData = $this->accountService->getAccountByName($DTO->getUsername(), $DTO->getTagLine());
-        $accountData = array_merge($accountData, $this->accountService->getRegionByGame($accountData['puuid']));
-
-        return $this->riotAccountRepository->createOrUpdateAccount(
-            $accountData
-        );
+        return $disk->url($relativePath);
     }
 }

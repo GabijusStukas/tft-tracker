@@ -12,6 +12,16 @@ Route::middleware(AuthenticateWithJwt::class)->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
+
+    Route::get('{game}/summoners/{region}/{username}-{tagLine}', function ($game, $region, $username, $tagLine) {
+        return Inertia::render('Summoner', [
+            'game' => $game,
+            'region' => $region,
+            'username' => $username,
+            'tagLine' => $tagLine
+        ]);
+    })->name('summoner');
+
 });
 
 

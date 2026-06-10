@@ -41,13 +41,10 @@ const clearCookie = (name: string): void => {
     document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
 };
 
-const token = ref<string | null>(localStorage.getItem(JWT_COOKIE_NAME) ?? getCookie(JWT_COOKIE_NAME));
+const token = ref<string | null>(getCookie(JWT_COOKIE_NAME));
 const user = ref<User | null>(null);
 const isAuthenticated = computed(() => !!token.value && !!user.value);
 
-if (token.value && !getCookie(JWT_COOKIE_NAME)) {
-    setCookie(JWT_COOKIE_NAME, token.value);
-}
 
 let fetchUserPromise: Promise<User | null> | null = null;
 
@@ -91,6 +88,7 @@ export const useAuth = () => {
     }
 
     const setToken = (newToken: string) => {
+        console.log('Setting token:', newToken);
         token.value = newToken;
         setCookie(JWT_COOKIE_NAME, newToken);
     };
