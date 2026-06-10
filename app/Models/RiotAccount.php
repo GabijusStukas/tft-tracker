@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * @property int $id
@@ -16,6 +17,8 @@ use Illuminate\Support\Carbon;
  * @property string $game
  * @property string $region
  * @property RiotRegion $riotRegion
+ * @property RiotSummoner $summoner
+ * @property Collection<int, RiotMatch> $matches
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */

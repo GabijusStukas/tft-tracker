@@ -21,4 +21,13 @@ class RiotSummonerRepository
             'summoner_level'  => $data['summonerLevel'],
         ]);
     }
+
+    /**
+     * @param int $accountId
+     * @return RiotSummoner
+     */
+    public function getByAccountId(int $accountId): RiotSummoner
+    {
+        return RiotSummoner::query()->where('account_id', $accountId)->firstOrFail();
+    }
 }

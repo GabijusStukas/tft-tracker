@@ -4,6 +4,7 @@ namespace App\Services\Riot\API;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\Log;
 use Psr\Http\Message\ResponseInterface;
 
 class DataDragonClient

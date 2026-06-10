@@ -23,13 +23,36 @@ class TFTService
     public function getMatchesByPuuid(string $puuid): array
     {
         try {
-            return $this->client->request('GET',"tft/match/v1/matches/by-puuid/$puuid/ids");
+            return $this->client->request('GET',"tft/match/v1/matches/by-puuid/$puuid/ids", [
+                'query' => [
+                    'start' => 0,
+                    'count' => 10
+                ]
+            ]);
         } catch (Throwable $exception) {
             Log::info('Riot API error', [
                 'message' => $exception->getMessage(),
                 'puuid'   => $puuid
             ]);
             throw new RiotApiException('Could not get matches for summoner', 404);
+        }
+    }
+
+    /**
+     * @param string $matchId
+     * @return array
+     * @throws RiotApiException
+     */
+    public function getMatch(string $matchId): array
+    {
+        try {
+            return $this->client->request('GET',"tft/match/v1/matches/$matchId");
+        } catch (Throwable $exception) {
+            Log::info('Riot API error', [
+                'message'  => $exception->getMessage(),
+                'match_id' => $matchId
+            ]);
+            throw new RiotApiException('Could not get match', 404);
         }
     }
 }
