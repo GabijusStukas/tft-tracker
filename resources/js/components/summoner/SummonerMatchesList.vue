@@ -134,18 +134,20 @@ watch(
 
 <template>
     <div class="flex flex-col gap-4">
-        <SummonerMatchSkeletonCard
-            v-if="isLoading"
-            v-for="card in skeletonCards"
-            :key="`skeleton-${card}`"
-        />
+        <template v-if="isLoading">
+            <SummonerMatchSkeletonCard
+                v-for="card in skeletonCards"
+                :key="`skeleton-${card}`"
+            />
+        </template>
 
-        <SummonerMatchCard
-            v-else-if="matches.length > 0"
-            v-for="(match, index) in matches"
-            :key="`${match.date}-${index}`"
-            :match="match"
-        />
+        <template v-else-if="matches.length > 0">
+            <SummonerMatchCard
+                v-for="(match, index) in matches"
+                :key="`${match.date}-${index}`"
+                :match="match"
+            />
+        </template>
 
         <article
             v-else

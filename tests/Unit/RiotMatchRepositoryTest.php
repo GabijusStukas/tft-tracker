@@ -13,10 +13,7 @@ class RiotMatchRepositoryTest extends TestCase
 {
     public function test_it_upserts_matches_and_returns_riot_match_models(): void
     {
-        $region = RiotRegion::factory()->create([
-            'region' => 'euw1',
-            'cluster' => 'europe',
-        ]);
+        $region = RiotRegion::query()->first();
 
         $account = RiotAccount::factory()->create([
             'region' => $region->region,
@@ -28,12 +25,14 @@ class RiotMatchRepositoryTest extends TestCase
             [
                 'account_id' => $account->id,
                 'match_id' => 'EUW1_1001',
-                'raw_data' => ['placement' => 1],
+                'raw_data' => json_encode(['placement' => 1]),
+                'match_created_at' => now(),
             ],
             [
                 'account_id' => $account->id,
                 'match_id' => 'EUW1_1002',
-                'raw_data' => ['placement' => 2],
+                'raw_data' => json_encode(['placement' => 2]),
+                'match_created_at' => now(),
             ],
         ];
 
