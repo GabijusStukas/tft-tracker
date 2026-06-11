@@ -1,12 +1,10 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Riot;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
@@ -34,6 +32,7 @@ class RiotSummoner extends Model
         'account_id',
         'summoner_level',
         'profile_icon_id',
+        'queue_type',
     ];
 
     /**

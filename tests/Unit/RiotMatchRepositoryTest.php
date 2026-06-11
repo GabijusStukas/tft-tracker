@@ -2,9 +2,9 @@
 
 namespace Tests\Unit;
 
-use App\Models\RiotAccount;
-use App\Models\RiotMatch;
-use App\Models\RiotRegion;
+use App\Models\Riot\RiotAccount;
+use App\Models\Riot\RiotMatch;
+use App\Models\Riot\RiotRegion;
 use App\Repositories\RiotMatchRepository;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Tests\TestCase;
@@ -26,12 +26,14 @@ class RiotMatchRepositoryTest extends TestCase
                 'account_id' => $account->id,
                 'match_id' => 'EUW1_1001',
                 'raw_data' => json_encode(['placement' => 1]),
+                'game_version' => '10.24.1',
                 'match_created_at' => now(),
             ],
             [
                 'account_id' => $account->id,
                 'match_id' => 'EUW1_1002',
                 'raw_data' => json_encode(['placement' => 2]),
+                'game_version' => '10.24.1',
                 'match_created_at' => now(),
             ],
         ];

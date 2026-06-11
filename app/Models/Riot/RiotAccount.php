@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Riot;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +19,7 @@ use Illuminate\Support\Collection;
  * @property RiotRegion $riotRegion
  * @property RiotSummoner $summoner
  * @property Collection<int, RiotMatch> $matches
+ * @property Collection<int, RiotLeague> $leagues
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -64,5 +65,13 @@ class RiotAccount extends Model
     public function summoner(): HasOne
     {
         return $this->hasOne(RiotSummoner::class, 'account_id', 'id');
+    }
+
+    /**
+     * @return HasMany
+     */
+    public function leagues(): HasMany
+    {
+        return $this->hasMany(RiotLeague::class, 'account_id', 'id');
     }
 }

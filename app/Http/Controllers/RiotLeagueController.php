@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RiotAccountSearchRequest;
+use App\Http\Resources\RiotLeagueResource;
 use App\Services\Riot\RiotService;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -23,7 +24,9 @@ class RiotLeagueController extends Controller
     public function index(RiotAccountSearchRequest $request): JsonResponse
     {
         try {
-            return response()->json($this->riotService->getSummonerMatches($request->toDTO()));
+            return response()->json(
+                RiotLeagueResource::collection($this->riotService->getAccountLeague($request->toDTO()))
+            );
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 400);
         }

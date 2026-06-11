@@ -4,6 +4,7 @@ namespace App\Services\Riot\API;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 
 class RiotClient
@@ -43,6 +44,8 @@ class RiotClient
      */
     public function request(string $method, string $uri, array $options = []): array
     {
+        Log::info('Riot API request');
+
         $response = $this->client->request($method, $uri, $options);
         return json_decode($response->getBody()->getContents(), true);
     }

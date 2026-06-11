@@ -2,9 +2,9 @@
 
 namespace App\Repositories;
 
-use App\Models\RiotMatch;
-use Illuminate\Database\Eloquent\Collection;
+use App\Models\Riot\RiotMatch;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 class RiotMatchRepository
 {

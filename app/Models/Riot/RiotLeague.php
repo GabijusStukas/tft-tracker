@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Riot;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,37 +10,36 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property int $account_id
- * @property string $match_id
- * @property array $raw_data
- * @property Carbon|null $match_created_at
+ * @property string $queue_type
+ * @property string $tier
+ * @property string $rank
+ * @property int $league_points
+ * @property int $wins
+ * @property int $losses
+ * @property RiotAccount $account
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-class RiotMatch extends Model
+class RiotLeague extends Model
 {
     use HasFactory;
 
     /**
      * @var string
      */
-    protected $table = 'riot_matches';
+    protected $table = 'riot_leagues';
 
     /**
      * @var string[]
      */
     protected $fillable = [
         'account_id',
-        'match_id',
-        'raw_data',
-        'match_created_at',
-    ];
-
-    /**
-     * @var string[]
-     */
-    protected $casts = [
-        'raw_data' => 'array',
-        'match_created_at' => 'datetime',
+        'queue_type',
+        'tier',
+        'rank',
+        'league_points',
+        'wins',
+        'losses',
     ];
 
     /**

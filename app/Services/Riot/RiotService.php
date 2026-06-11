@@ -4,16 +4,18 @@ namespace App\Services\Riot;
 
 use App\DTO\RiotAccountSearchDTO;
 use App\Http\Exceptions\RiotApiException;
-use App\Models\RiotAccount;
-use App\Models\RiotSummoner;
+use App\Models\Riot\RiotAccount;
+use App\Models\Riot\RiotLeague;
+use App\Models\Riot\RiotSummoner;
+use App\Repositories\Riot\RiotLeagueRepository;
+use App\Repositories\RiotAccountRepository;
 use App\Repositories\RiotMatchRepository;
 use App\Repositories\RiotRegionRepository;
-use App\Repositories\RiotAccountRepository;
 use App\Repositories\RiotSummonerRepository;
-use App\Services\Riot\API\AccountService;
 use App\Services\Riot\API\RiotServiceFactory;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 class RiotService
 {
@@ -22,13 +24,18 @@ class RiotService
      * @param RiotAccountRepository $riotAccountRepository
      * @param RiotRegionRepository $riotRegionRepository
      * @param RiotMatchRepository $riotMatchRepository
+     * @param RiotSummonerRepository $riotSummonerRepository
+     * @param RiotLeagueRepository $riotLeagueRepository
+     * @param DataDragonService $dataDragonService
      */
     public function __construct(
         private RiotServiceFactory     $serviceFactory,
         private RiotAccountRepository  $riotAccountRepository,
         private RiotRegionRepository   $riotRegionRepository,
         private RiotMatchRepository    $riotMatchRepository,
-        private RiotSummonerRepository $riotSummonerRepository
+        private RiotSummonerRepository $riotSummonerRepository,
+        private RiotLeagueRepository   $riotLeagueRepository,
+        private DataDragonService      $dataDragonService,
     ) {
     }
 
@@ -76,10 +83,13 @@ class RiotService
         $result = [];
         foreach ($matches as $match) {
             $matchData = $tftService->getMatch($match);
+            preg_match('/<Releases\/([^>]+)>/', $matchData['info']['game_version'], $matches);
+
             $result[] = [
                 'account_id'       => $account->id,
                 'match_id'         => $match,
                 'raw_data'         => json_encode($matchData),
+                'game_version'     => $this->dataDragonService->getVersion($matches[1]),
                 'match_created_at' => Carbon::createFromTimestampMs($matchData['info']['gameCreation'])->utc(),
             ];
         }
@@ -107,19 +117,32 @@ class RiotService
 
     /**
      * @param RiotAccountSearchDTO $DTO
-     * @return RiotSummoner
+     * @return Collection<int, RiotLeague>
      * @throws RiotApiException
      */
-    public function getAccountLeague(RiotAccountSearchDTO $DTO): RiotSummoner
+    public function getAccountLeague(RiotAccountSearchDTO $DTO): Collection
     {
         $account = $this->getSummonerByName($DTO);
 
-        if ( $DTO->shouldRefresh() === false ) {
-            return $this->riotSummonerRepository->getByAccountId($account->id);
+        if ( $account->leagues->isNotEmpty() && $DTO->shouldRefresh() === false ) {
+            return $this->riotLeagueRepository->getByAccountId($account->id);
         }
 
-        $summonerData = $this->serviceFactory->summoner($account->region)->getSummonerDetails($account->puuid);
+        $leagueData = $this->serviceFactory->tftLeague($account->region)->getLeagues($account->puuid);
 
-        return $this->riotSummonerRepository->createOrUpdate($account, $summonerData);
+        $result = collect();
+        foreach ($leagueData as $league) {
+            $result[] = $this->riotLeagueRepository->createOrUpdate([
+                'account_id'       => $account->id,
+                'queue_type'       => $league['queueType'],
+                'tier'             => $league['tier'],
+                'rank'             => $league['rank'],
+                'league_points'    => $league['leaguePoints'],
+                'wins'             => $league['wins'],
+                'losses'           => $league['losses'],
+            ]);
+        }
+
+        return $result;
     }
 }

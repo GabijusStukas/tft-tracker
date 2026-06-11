@@ -8,9 +8,13 @@ interface Props {
     username: string;
     tagLine: string;
     region: string;
+    refreshToken: number;
 }
 
 const props = defineProps<Props>();
+const emit = defineEmits<{
+    (event: 'refresh-all'): void;
+}>();
 
 const profileIconUrl = ref<string | null>(null);
 const summonerLevel = ref<number | null>(null);
@@ -19,20 +23,23 @@ const isImageLoading = ref(false);
 
 const { fetchSummonerProfile } = useRiotApi();
 
-async function loadSummonerProfile() {
+async function loadSummonerProfile(refresh = false) {
     isProfileLoading.value = true;
 
     try {
+        const previousIconUrl = profileIconUrl.value;
         const response = await fetchSummonerProfile({
             game: props.game,
             region: props.region,
             username: props.username,
             tagLine: props.tagLine,
-        });
+        }, { refresh });
 
-        profileIconUrl.value = response?.profile_icon_url ?? null;
+        const nextIconUrl = response?.profile_icon_url ?? null;
+        profileIconUrl.value = nextIconUrl;
         summonerLevel.value = response?.summoner_level ?? null;
-        isImageLoading.value = Boolean(profileIconUrl.value);
+        // If URL did not change, keep current image visible instead of waiting for a load event that may not fire again.
+        isImageLoading.value = Boolean(nextIconUrl && nextIconUrl !== previousIconUrl);
     } finally {
         isProfileLoading.value = false;
     }
@@ -41,9 +48,18 @@ async function loadSummonerProfile() {
 watch(
     () => [props.game, props.region, props.username, props.tagLine],
     () => {
-        void loadSummonerProfile();
+        void loadSummonerProfile(false);
     },
     { immediate: true },
+);
+
+watch(
+    () => props.refreshToken,
+    (value) => {
+        if (value > 0) {
+            void loadSummonerProfile(true);
+        }
+    },
 );
 </script>
 
@@ -80,24 +96,14 @@ watch(
                     <p v-else class="text-sm text-muted-foreground">{{ region.toUpperCase() }}</p>
                 </div>
             </div>
-            <div class="grid grid-cols-2 gap-3 text-right sm:grid-cols-4">
-                <div>
-                    <p class="text-xs uppercase tracking-wide text-muted-foreground">Tier</p>
-                    <p class="font-semibold text-sidebar-foreground">Master</p>
-                </div>
-                <div>
-                    <p class="text-xs uppercase tracking-wide text-muted-foreground">LP</p>
-                    <p class="font-semibold text-sidebar-foreground">241</p>
-                </div>
-                <div>
-                    <p class="text-xs uppercase tracking-wide text-muted-foreground">Top 4</p>
-                    <p class="font-semibold text-emerald-500">61%</p>
-                </div>
-                <div>
-                    <p class="text-xs uppercase tracking-wide text-muted-foreground">Avg Place</p>
-                    <p class="font-semibold text-sidebar-foreground">4.12</p>
-                </div>
-            </div>
+            <button
+                type="button"
+                class="inline-flex items-center justify-center rounded-md border border-sidebar-border/70 px-3 py-1.5 text-xs font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent disabled:cursor-not-allowed disabled:opacity-50 dark:border-sidebar-border dark:hover:bg-sidebar"
+                :disabled="isProfileLoading"
+                @click="emit('refresh-all')"
+            >
+                {{ isProfileLoading ? 'Refreshing...' : 'Refresh Data' }}
+            </button>
         </div>
     </section>
 </template>

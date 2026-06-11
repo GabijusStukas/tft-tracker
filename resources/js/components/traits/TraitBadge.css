@@ -1,0 +1,106 @@
+.trait-badge {
+    --trait-border-color: rgb(63 63 70 / 0.95);
+    position: relative;
+    display: flex;
+    width: 2rem;
+    height: 2rem;
+    align-items: center;
+    justify-content: center;
+    clip-path: polygon(50% 0%, 93.3% 25%, 93.3% 75%, 50% 100%, 6.7% 75%, 6.7% 25%);
+    background-color: var(--trait-border-color);
+}
+
+.trait-badge::before {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    clip-path: inherit;
+    background-color: rgb(24 24 27 / 0.92);
+}
+
+.trait-badge > * {
+    position: relative;
+    z-index: 1;
+}
+
+/*noinspection CssUnusedSymbol */
+.trait-badge-default {
+    border: 1px solid rgb(63 63 70 / 0.8);
+    background-color: var(--trait-border-color);
+}
+
+/*noinspection CssUnusedSymbol */
+.trait-badge-prismatic {
+    background: linear-gradient(
+        120deg,
+        #f8fafc 0%,
+        #a5f3fc 20%,
+        #c4b5fd 40%,
+        #f9a8d4 60%,
+        #fde68a 80%,
+        #f8fafc 100%
+    );
+    background-size: 220% 220%;
+    animation: trait-prismatic-shift 3.2s linear infinite;
+}
+
+/*noinspection CssUnusedSymbol */
+.trait-badge-rainbow {
+    background: repeating-linear-gradient(
+        90deg,
+        #ff3b30 0%,
+        #ff9500 12.5%,
+        #ffcc00 25%,
+        #34c759 37.5%,
+        #00c7be 50%,
+        #32ade6 62.5%,
+        #5856d6 75%,
+        #ff2d55 87.5%,
+        #ff3b30 100%
+    );
+    background-size: 200% 100%;
+    animation: trait-rainbow-slide 2.8s linear infinite;
+}
+
+.trait-badge-tooltip {
+    pointer-events: none;
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 0.35rem);
+    z-index: 10;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    border-radius: 0.375rem;
+    background-color: rgb(24 24 27 / 0.95);
+    padding: 0.2rem 0.45rem;
+    font-size: 10px;
+    line-height: 1.2;
+    color: rgb(244 244 245);
+    opacity: 0;
+    transition: opacity 140ms ease;
+}
+
+.group:hover .trait-badge-tooltip {
+    opacity: 1;
+}
+
+@keyframes trait-prismatic-shift {
+    from {
+        background-position: 0 50%;
+    }
+
+    to {
+        background-position: 220% 50%;
+    }
+}
+
+@keyframes trait-rainbow-slide {
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: -200% 0;
+    }
+}
+

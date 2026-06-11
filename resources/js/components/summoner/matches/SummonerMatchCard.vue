@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import TraitBadge from '../../traits/TraitBadge.vue';
 import type { MatchItem } from './types';
 import { formatMatchDate, normalizeTraitName } from './utils';
 
@@ -26,42 +27,32 @@ function getUnitStyle(rarity: number): Record<string, string> {
     };
 }
 
-function getTraitAccentColor(style: number): string {
-    const styleColors: Record<number, string> = {
-        1: '#8C5A2B',
-        2: '#C0C0C0',
-        3: '#FFD700',
-        4: '#A855F7',
-    };
-
-    return styleColors[style] ?? '#9CA3AF';
-}
-
-function getTraitTextClass(style: number): string {
-    const styleClasses: Record<number, string> = {
-        1: 'text-orange-400/80',
-        2: 'text-slate-300/85',
-        3: 'text-yellow-200/85',
-        4: 'text-violet-200/85',
-    };
-
-    return styleClasses[style] ?? 'text-slate-400/85';
-}
-
-function getTraitChipClass(): string {
-    return 'border-zinc-700/80 bg-zinc-900/90';
-}
-
-function getTraitIconStyle(style: number): Record<string, string> {
-    const accent = getTraitAccentColor(style);
-
-    return {
-        filter: `drop-shadow(0 0 2px ${accent})`,
-    };
-}
-
 function getVisibleUnitItems(items: Array<{ icon?: string | null }>): Array<{ icon?: string | null }> {
     return items.filter((item) => Boolean(item.icon)).slice(0, 3);
+}
+
+function getPlacementClass(placement: number): string {
+    if (placement === 1) {
+        return 'border border-amber-300/70 bg-amber-50 text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200';
+    }
+
+    if (placement <= 4) {
+        return 'border border-emerald-300/70 bg-emerald-50 text-emerald-800 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200';
+    }
+
+    return 'border border-rose-300/70 bg-rose-50 text-rose-800 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200';
+}
+
+function getPlacementLabel(placement: number): string {
+    if (placement === 1) {
+        return 'Victory';
+    }
+
+    if (placement <= 4) {
+        return 'Top 4';
+    }
+
+    return 'Bottom 4';
 }
 </script>
 
@@ -70,36 +61,28 @@ function getVisibleUnitItems(items: Array<{ icon?: string | null }>): Array<{ ic
         <div class="flex items-center justify-between gap-4">
             <div class="flex items-center gap-4">
                 <div
-                    class="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-lg text-center font-bold"
-                    :class="props.match.placement <= 4 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'"
+                    class="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-xl text-center font-bold"
+                    :class="getPlacementClass(props.match.placement)"
                 >
-                    <span class="text-lg leading-none">#{{ props.match.placement }}</span>
-                    <span class="mt-0.5 text-[9px] font-semibold uppercase leading-none opacity-80">
-                        {{ props.match.gameType || '-' }}
+                    <span class="text-xl leading-none">#{{ props.match.placement }}</span>
+                    <span class="mt-0.5 text-[9px] font-semibold uppercase leading-none opacity-85">
+                        {{ getPlacementLabel(props.match.placement) }}
                     </span>
                 </div>
                 <div class="min-w-0">
-                    <div class="flex flex-wrap gap-1">
-                        <span
+                    <div class="flex flex-wrap gap-2">
+                        <TraitBadge
                             v-for="(trait, traitIndex) in props.match.traits"
                             :key="`trait-${traitIndex}`"
-                            class="flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium"
-                            :class="[getTraitChipClass(), getTraitTextClass(trait.style ?? 0)]"
-                        >
-                            <img
-                                v-if="trait.icon"
-                                :src="trait.icon"
-                                :alt="trait.name ?? ''"
-                                class="h-4 w-4 object-contain"
-                                :style="getTraitIconStyle(trait.style ?? 0)"
-                            />
-                            <span>
-                                {{ normalizeTraitName(trait.name ?? '') }}
-                                <span class="opacity-75">{{ trait.num_units ?? 0 }}</span>
-                            </span>
-                        </span>
+                            :trait="trait"
+                            :label="normalizeTraitName(trait.name ?? '')"
+                        />
                     </div>
-                    <p class="mt-2 text-xs text-muted-foreground">{{ formatMatchDate(props.match.date) }}</p>
+                    <p class="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>{{ formatMatchDate(props.match.date) }}</span>
+                        <span class="opacity-60">•</span>
+                        <span class="font-semibold uppercase tracking-wide">{{ props.match.gameType || '-' }}</span>
+                    </p>
                 </div>
             </div>
         </div>
@@ -143,4 +126,3 @@ function getVisibleUnitItems(items: Array<{ icon?: string | null }>): Array<{ ic
         </div>
     </article>
 </template>
-

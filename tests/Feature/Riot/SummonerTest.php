@@ -3,11 +3,11 @@
 namespace Tests\Feature\Riot;
 
 use App\Http\Exceptions\RiotApiException;
-use App\Models\RiotAccount;
+use App\Models\Riot\RiotAccount;
 use App\Models\User;
 use App\Services\Riot\API\RiotClient;
-use Tests\TestCase;
 use Mockery;
+use Tests\TestCase;
 
 class SummonerTest extends TestCase
 {
