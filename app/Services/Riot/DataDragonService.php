@@ -32,12 +32,16 @@ class DataDragonService
     }
 
     /**
-     * @param string $version
      * @param DataDragonIconType $iconType
+     * @param string|null $version
      * @return array
      */
-    public function getCdnData(string $version, DataDragonIconType $iconType): array
+    public function getCdnData(DataDragonIconType $iconType, ?string $version = null): array
     {
+        if (! $version ) {
+            $version = $this->getLatestVersion();
+        }
+
         return Cache::remember(
             'riot.datadragon.cdn_data.' . $version . '.' . $iconType->value,
             now()->addHours(12),
@@ -155,7 +159,7 @@ class DataDragonService
         if (! $version ) {
             $version = $this->getLatestVersion();
         }
-        $cdnData = $this->getCdnData($version, $type);
+        $cdnData = $this->getCdnData($type, $version);
 
         $championData = $cdnData['data'];
 

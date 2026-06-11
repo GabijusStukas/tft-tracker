@@ -1,115 +1,159 @@
 <script setup lang="ts">
-interface MatchItem {
-    placement: number;
-    comp: string;
-    lp: string;
-    date: string;
-    units: Array<{
-        character_id: string;
-        name?: string | null;
-        icon?: string | null;
-        rarity: number;
-        tier: number;
-    }>;
+import { useRiotApi } from '@/composables/useRiotApi';
+import { ref, watch } from 'vue';
+import SummonerMatchCard from './matches/SummonerMatchCard.vue';
+import SummonerMatchSkeletonCard from './matches/SummonerMatchSkeletonCard.vue';
+import type { MatchItem } from './matches/types';
+import { normalizeTraitName } from './matches/utils';
+
+interface Props {
+    game: string;
+    region: string;
+    username: string;
+    tagLine: string;
+}
+
+interface TopCompItem {
+    name: string;
+    games: number;
+    avg: number;
 }
 
 const props = defineProps<Props>();
 
-interface Props {
-    matches: MatchItem[];
-}
+const emit = defineEmits<{
+    (event: 'top-comps-updated', payload: TopCompItem[]): void;
+}>();
 
-function getUnitName(characterId: string): string {
-    return characterId.replace(/^TFT\d+_/, '');
-}
+const matches = ref<MatchItem[]>([]);
+const isLoading = ref(false);
+const { fetchSummonerMatches } = useRiotApi();
 
-function getUnitColor(rarity: number): string {
-    const rarityColors: Record<number, string> = {
-        6: '#EB9C00',
-        4: '#E537A2',
-        2: '#0093FF',
-        1: '#00AE0A',
-        0: '#9AA4AF',
-    };
+const skeletonCards = [1, 2, 3, 4, 5];
 
-    return rarityColors[rarity] ?? '#9AA4AF';
-}
-
-function getUnitStyle(rarity: number): Record<string, string> {
-    return {
-        borderColor: getUnitColor(rarity),
-    };
-}
-
-function formatMatchDate(date: string): string {
-    const parsed = new Date(date);
-
-    if (Number.isNaN(parsed.getTime())) {
-        return date;
+function formatUtcTimestamp(value?: string | number): string {
+    if (value === undefined || value === null || value === '') {
+        return '-';
     }
 
-    const year = parsed.getUTCFullYear();
-    const month = String(parsed.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(parsed.getUTCDate()).padStart(2, '0');
-    const hours = String(parsed.getUTCHours()).padStart(2, '0');
-    const minutes = String(parsed.getUTCMinutes()).padStart(2, '0');
-    const seconds = String(parsed.getUTCSeconds()).padStart(2, '0');
+    const date = typeof value === 'number' ? new Date(value) : new Date(String(value));
 
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    if (Number.isNaN(date.getTime())) {
+        return '-';
+    }
+
+    return date.toISOString();
 }
+
+async function loadMatches() {
+    isLoading.value = true;
+
+    try {
+        const responseMatches = await fetchSummonerMatches({
+            game: props.game,
+            region: props.region,
+            username: props.username,
+            tagLine: props.tagLine,
+        });
+
+        matches.value = responseMatches
+            .map((match: any) => {
+                const participants = match?.raw_data?.info?.participants ?? [];
+                const summonerParticipant = participants.find((participant: any) => participant.puuid === match?.puuid);
+
+                if (!summonerParticipant) {
+                    return null;
+                }
+
+                const placement = summonerParticipant.placement ?? 8;
+
+                return {
+                    placement,
+                    traits: (summonerParticipant.traits ?? [])
+                        .filter((trait: any) => (trait.style ?? 0) > 0)
+                        .sort((a: any, b: any) => (b.style ?? 0) - (a.style ?? 0) || (b.num_units ?? 0) - (a.num_units ?? 0))
+                        .map((trait: any) => ({
+                            icon: trait.icon ?? null,
+                            name: trait.name ?? null,
+                            style: trait.style ?? 0,
+                            num_units: trait.num_units ?? 0,
+                        })),
+                    gameType: String(match?.raw_data?.info?.queue_name ?? ''),
+                    date: formatUtcTimestamp(match?.match_created_at ?? match?.raw_data?.info?.game_datetime ?? match?.raw_data?.info?.gameCreation),
+                    units: (summonerParticipant.units ?? []).map((unit: any) => ({
+                        character_id: unit.character_id,
+                        name: unit.name ?? null,
+                        icon: unit.icon ?? null,
+                        rarity: Number(unit.rarity ?? 0),
+                        tier: Number(unit.tier ?? 0),
+                        items: (unit.items ?? []).slice(0, 3).map((item: any) => ({
+                            icon: item.icon ?? null,
+                        })),
+                    })),
+                };
+            })
+            .filter(Boolean) as MatchItem[];
+
+        const compStats = new Map<string, { games: number; totalPlacement: number }>();
+
+        for (const match of matches.value) {
+            const compName =
+                match.traits
+                    .slice(0, 2)
+                    .map((t) => normalizeTraitName(t.name ?? 'Unknown'))
+                    .join(' / ') || 'Unknown comp';
+            const current = compStats.get(compName) ?? { games: 0, totalPlacement: 0 };
+            current.games += 1;
+            current.totalPlacement += match.placement;
+            compStats.set(compName, current);
+        }
+
+        const topComps = Array.from(compStats.entries())
+            .map(([name, stat]) => ({
+                name,
+                games: stat.games,
+                avg: Number((stat.totalPlacement / stat.games).toFixed(2)),
+            }))
+            .sort((a, b) => b.games - a.games || a.avg - b.avg)
+            .slice(0, 5);
+
+        emit('top-comps-updated', topComps);
+    } finally {
+        isLoading.value = false;
+    }
+}
+
+watch(
+    () => [props.game, props.region, props.username, props.tagLine],
+    () => {
+        void loadMatches();
+    },
+    { immediate: true },
+);
 </script>
 
 <template>
     <div class="flex flex-col gap-4">
-        <article
-            v-for="(match, index) in props.matches"
-            :key="`${match.comp}-${index}`"
-            class="rounded-xl border border-sidebar-border/70 bg-white p-4 dark:border-sidebar-border dark:bg-sidebar-accent"
-        >
-            <div class="flex items-center justify-between gap-4">
-                <div class="flex items-center gap-4">
-                    <div
-                        class="h-12 w-12 rounded-lg text-center text-lg font-bold leading-[48px]"
-                        :class="match.placement <= 4 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'"
-                    >
-                        #{{ match.placement }}
-                    </div>
-                    <div>
-                        <p class="font-semibold text-sidebar-foreground">{{ match.comp }}</p>
-                        <p class="text-xs text-muted-foreground">{{ formatMatchDate(match.date) }}</p>
-                    </div>
-                </div>
-                <p class="text-sm font-semibold" :class="match.lp.startsWith('+') ? 'text-emerald-500' : 'text-rose-500'">{{ match.lp }}</p>
-            </div>
+        <template v-if="isLoading">
+            <SummonerMatchSkeletonCard
+                v-for="card in skeletonCards"
+                :key="`skeleton-${card}`"
+            />
+        </template>
 
-            <div class="mt-3 flex gap-2 overflow-x-auto pb-1">
-                <div
-                    v-for="(unit, unitIndex) in match.units"
-                    :key="`${unit.character_id}-${unitIndex}`"
-                    class="flex w-16 shrink-0 flex-col items-center gap-1"
-                >
-                    <div class="min-h-3 text-[10px] leading-none" :style="{ color: getUnitColor(unit.rarity) }">
-                        <span v-for="starIndex in unit.tier" :key="`${unit.character_id}-star-${starIndex}`">★</span>
-                    </div>
-                    <img
-                        v-if="unit.icon"
-                        :src="unit.icon"
-                        :alt="unit.name ?? getUnitName(unit.character_id)"
-                        class="h-14 w-14 rounded-md border-2 object-cover"
-                        :style="getUnitStyle(unit.rarity)"
-                    />
-                    <div
-                        v-else
-                        class="flex h-14 w-14 items-center justify-center rounded-md border-2 bg-muted text-[10px] text-muted-foreground"
-                        :style="getUnitStyle(unit.rarity)"
-                    >
-                        {{ getUnitName(unit.character_id).slice(0, 3) }}
-                    </div>
-                    <p class="w-full truncate text-center text-[10px] leading-tight text-muted-foreground">
-                        {{ unit.name ?? getUnitName(unit.character_id) }}
-                    </p>
-                </div>
-            </div>
+        <template v-else-if="matches.length > 0">
+            <SummonerMatchCard
+                v-for="(match, index) in matches"
+                :key="`${match.date}-${index}`"
+                :match="match"
+            />
+        </template>
+
+        <article
+            v-else
+            class="rounded-xl border border-dashed border-sidebar-border/70 bg-white p-6 text-sm text-muted-foreground dark:border-sidebar-border dark:bg-sidebar-accent"
+        >
+            No recent matches found.
         </article>
     </div>
 </template>

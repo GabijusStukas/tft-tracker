@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import axios from 'axios';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useRiotApi } from '@/composables/useRiotApi';
 import { ref, watch } from 'vue';
 
 interface Props {
@@ -17,19 +17,21 @@ const summonerLevel = ref<number | null>(null);
 const isProfileLoading = ref(true);
 const isImageLoading = ref(false);
 
+const { fetchSummonerProfile } = useRiotApi();
+
 async function loadSummonerProfile() {
     isProfileLoading.value = true;
 
     try {
-        const response = await axios.get(route('riot.account.index', {
+        const response = await fetchSummonerProfile({
             game: props.game,
             region: props.region,
             username: props.username,
-            tag_line: props.tagLine,
-        }));
+            tagLine: props.tagLine,
+        });
 
-        profileIconUrl.value = response.data?.profile_icon_url ?? null;
-        summonerLevel.value = response.data?.summoner_level ?? null;
+        profileIconUrl.value = response?.profile_icon_url ?? null;
+        summonerLevel.value = response?.summoner_level ?? null;
         isImageLoading.value = Boolean(profileIconUrl.value);
     } finally {
         isProfileLoading.value = false;
