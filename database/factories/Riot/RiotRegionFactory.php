@@ -1,8 +1,8 @@
 <?php
 
-namespace Database\Factories;
+namespace Database\Factories\Riot;
 
-use App\Models\RiotRegion;
+use App\Models\Riot\RiotRegion;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

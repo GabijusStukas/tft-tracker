@@ -75,10 +75,10 @@ class RiotMatchResource extends JsonResource
     protected function withDataDragon(string $entityId, DataDragonIconType $type): array
     {
         try {
-            $cdnData = $this->dataDragonService->getEntityCdnData($entityId, $type);
+            $cdnData = $this->dataDragonService->getEntityCdnData($entityId, $type, $this->game_version);
 
             $unit['name'] = $cdnData['name'];
-            $unit['icon'] = $this->dataDragonService->getCdnImageUrl($entityId, $type);
+            $unit['icon'] = $this->dataDragonService->getCdnImageUrl($entityId, $type, $this->game_version);
         } catch (Throwable) {
             $unit['icon'] = null;
         }
@@ -92,7 +92,7 @@ class RiotMatchResource extends JsonResource
      */
     protected function getQueueName(string $queueId): string
     {
-        $queueData = $this->dataDragonService->getCdnData(DataDragonIconType::TFT_QUEUES);
+        $queueData = $this->dataDragonService->getCdnData(DataDragonIconType::TFT_QUEUES, $this->game_version);
 
         return $queueData['data'][$queueId]['name'] ?? 'Unknown Queue';
     }

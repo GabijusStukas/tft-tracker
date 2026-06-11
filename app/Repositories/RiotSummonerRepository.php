@@ -2,8 +2,8 @@
 
 namespace App\Repositories;
 
-use App\Models\RiotAccount;
-use App\Models\RiotSummoner;
+use App\Models\Riot\RiotAccount;
+use App\Models\Riot\RiotSummoner;
 
 class RiotSummonerRepository
 {
@@ -20,14 +20,5 @@ class RiotSummonerRepository
             'profile_icon_id' => $data['profileIconId'],
             'summoner_level'  => $data['summonerLevel'],
         ]);
-    }
-
-    /**
-     * @param int $accountId
-     * @return RiotSummoner
-     */
-    public function getByAccountId(int $accountId): RiotSummoner
-    {
-        return RiotSummoner::query()->where('account_id', $accountId)->firstOrFail();
     }
 }

@@ -37,4 +37,13 @@ class RiotServiceFactory
     {
         return new SummonerService($this->client->setUpClient($region));
     }
+
+    /**
+     * @param string|null $region
+     * @return TftLeagueService
+     */
+    public function tftLeague(?string $region = null): TftLeagueService
+    {
+        return new TftLeagueService($this->client->setUpClient($region));
+    }
 }

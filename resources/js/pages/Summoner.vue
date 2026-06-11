@@ -14,13 +14,12 @@ interface Props {
 	tagLine: string;
 }
 
-interface TopCompItem {
-	name: string;
-	games: number;
-	avg: number;
-}
-
 const props = defineProps<Props>();
+const refreshToken = ref(0);
+
+function refreshAllRiotData(): void {
+	refreshToken.value += 1;
+}
 
 const breadcrumbs: BreadcrumbItem[] = [
 	{
@@ -32,11 +31,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 		href: `/${props.game}/summoners/${props.region}/${props.username}-${props.tagLine}`,
 	},
 ];
-
-const topComps = ref<TopCompItem[]>([]);
-function updateTopComps(value: TopCompItem[]): void {
-	topComps.value = value;
-}
 </script>
 
 <template>
@@ -45,7 +39,14 @@ function updateTopComps(value: TopCompItem[]): void {
 	<AppLayout :breadcrumbs="breadcrumbs">
 		<div class="min-h-full bg-[#f3f5f8] p-4 dark:bg-sidebar">
 			<div class="mx-auto flex w-full max-w-7xl flex-col gap-4">
-				<SummonerProfileCard :game="props.game" :username="props.username" :tag-line="props.tagLine" :region="props.region" />
+				<SummonerProfileCard
+					:game="props.game"
+					:username="props.username"
+					:tag-line="props.tagLine"
+					:region="props.region"
+					:refresh-token="refreshToken"
+					@refresh-all="refreshAllRiotData"
+				/>
 
 				<section class="grid gap-4 lg:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)]">
 					<SummonerMatchesList
@@ -53,12 +54,17 @@ function updateTopComps(value: TopCompItem[]): void {
 						:region="props.region"
 						:username="props.username"
 						:tag-line="props.tagLine"
-						@top-comps-updated="updateTopComps"
+						:refresh-token="refreshToken"
 					/>
-					<SummonerSidebar :top-comps="topComps" />
+					<SummonerSidebar
+						:game="props.game"
+						:region="props.region"
+						:username="props.username"
+						:tag-line="props.tagLine"
+						:refresh-token="refreshToken"
+					/>
 				</section>
 			</div>
 		</div>
 	</AppLayout>
 </template>
-

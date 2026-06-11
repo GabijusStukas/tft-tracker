@@ -1,8 +1,8 @@
 <?php
 
-namespace Database\Factories;
+namespace Database\Factories\Riot;
 
-use App\Models\RiotAccount;
+use App\Models\Riot\RiotAccount;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

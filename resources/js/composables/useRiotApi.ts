@@ -7,6 +7,10 @@ interface RiotAccountRouteParams {
     tagLine: string;
 }
 
+interface RiotRequestOptions {
+    refresh?: boolean;
+}
+
 export function useRiotApi() {
     async function searchRiotAccount(username: string, tagLine: string): Promise<any> {
         const response = await axios.get(route('riot.account.search'), {
@@ -19,7 +23,7 @@ export function useRiotApi() {
         return response.data?.data ?? response.data;
     }
 
-    async function fetchSummonerProfile(params: RiotAccountRouteParams): Promise<any> {
+    async function fetchSummonerProfile(params: RiotAccountRouteParams, options?: RiotRequestOptions): Promise<any> {
         const response = await axios.get(
             route('riot.account.index', {
                 game: params.game,
@@ -27,12 +31,15 @@ export function useRiotApi() {
                 username: params.username,
                 tag_line: params.tagLine,
             }),
+            {
+                params: options?.refresh ? { refresh: 1 } : {},
+            },
         );
 
         return response.data ?? {};
     }
 
-    async function fetchSummonerMatches(params: RiotAccountRouteParams): Promise<any[]> {
+    async function fetchSummonerMatches(params: RiotAccountRouteParams, options?: RiotRequestOptions): Promise<any[]> {
         const response = await axios.get(
             route('riot.matches', {
                 game: params.game,
@@ -40,6 +47,25 @@ export function useRiotApi() {
                 username: params.username,
                 tag_line: params.tagLine,
             }),
+            {
+                params: options?.refresh ? { refresh: 1 } : {},
+            },
+        );
+
+        return Array.isArray(response.data) ? response.data : response.data?.data ?? [];
+    }
+
+    async function fetchSummonerLeague(params: RiotAccountRouteParams, options?: RiotRequestOptions): Promise<any[]> {
+        const response = await axios.get(
+            route('riot.league', {
+                game: params.game,
+                region: params.region,
+                username: params.username,
+                tag_line: params.tagLine,
+            }),
+            {
+                params: options?.refresh ? { refresh: 1 } : {},
+            },
         );
 
         return Array.isArray(response.data) ? response.data : response.data?.data ?? [];
@@ -49,6 +75,7 @@ export function useRiotApi() {
         searchRiotAccount,
         fetchSummonerProfile,
         fetchSummonerMatches,
+        fetchSummonerLeague,
     };
 }
 

@@ -2,7 +2,7 @@
 
 namespace App\Repositories;
 
-use App\Models\RiotRegion;
+use App\Models\Riot\RiotRegion;
 use Illuminate\Support\Facades\Cache;
 
 class RiotRegionRepository

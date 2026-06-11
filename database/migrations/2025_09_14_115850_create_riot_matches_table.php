@@ -16,8 +16,8 @@ return new class extends Migration
 
             $table->unsignedBigInteger('account_id')->index();
             $table->string('match_id')->index();
+            $table->string('game_version')->index();
             $table->json('raw_data');
-
             $table->timestamp('match_created_at');
             $table->timestamps();
 

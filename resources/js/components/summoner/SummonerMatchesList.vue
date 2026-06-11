@@ -4,26 +4,18 @@ import { ref, watch } from 'vue';
 import SummonerMatchCard from './matches/SummonerMatchCard.vue';
 import SummonerMatchSkeletonCard from './matches/SummonerMatchSkeletonCard.vue';
 import type { MatchItem } from './matches/types';
-import { normalizeTraitName } from './matches/utils';
 
 interface Props {
     game: string;
     region: string;
     username: string;
     tagLine: string;
+    refreshToken: number;
 }
 
-interface TopCompItem {
-    name: string;
-    games: number;
-    avg: number;
-}
 
 const props = defineProps<Props>();
 
-const emit = defineEmits<{
-    (event: 'top-comps-updated', payload: TopCompItem[]): void;
-}>();
 
 const matches = ref<MatchItem[]>([]);
 const isLoading = ref(false);
@@ -45,7 +37,7 @@ function formatUtcTimestamp(value?: string | number): string {
     return date.toISOString();
 }
 
-async function loadMatches() {
+async function loadMatches(refresh = false) {
     isLoading.value = true;
 
     try {
@@ -54,7 +46,7 @@ async function loadMatches() {
             region: props.region,
             username: props.username,
             tagLine: props.tagLine,
-        });
+        }, { refresh });
 
         matches.value = responseMatches
             .map((match: any) => {
@@ -93,31 +85,6 @@ async function loadMatches() {
                 };
             })
             .filter(Boolean) as MatchItem[];
-
-        const compStats = new Map<string, { games: number; totalPlacement: number }>();
-
-        for (const match of matches.value) {
-            const compName =
-                match.traits
-                    .slice(0, 2)
-                    .map((t) => normalizeTraitName(t.name ?? 'Unknown'))
-                    .join(' / ') || 'Unknown comp';
-            const current = compStats.get(compName) ?? { games: 0, totalPlacement: 0 };
-            current.games += 1;
-            current.totalPlacement += match.placement;
-            compStats.set(compName, current);
-        }
-
-        const topComps = Array.from(compStats.entries())
-            .map(([name, stat]) => ({
-                name,
-                games: stat.games,
-                avg: Number((stat.totalPlacement / stat.games).toFixed(2)),
-            }))
-            .sort((a, b) => b.games - a.games || a.avg - b.avg)
-            .slice(0, 5);
-
-        emit('top-comps-updated', topComps);
     } finally {
         isLoading.value = false;
     }
@@ -126,9 +93,18 @@ async function loadMatches() {
 watch(
     () => [props.game, props.region, props.username, props.tagLine],
     () => {
-        void loadMatches();
+        void loadMatches(false);
     },
     { immediate: true },
+);
+
+watch(
+    () => props.refreshToken,
+    (value) => {
+        if (value > 0) {
+            void loadMatches(true);
+        }
+    },
 );
 </script>
 

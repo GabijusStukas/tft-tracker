@@ -15,7 +15,12 @@ return new class extends Migration
             $table->id();
 
             $table->unsignedBigInteger('account_id');
-
+            $table->string('queue_type');
+            $table->string('tier');
+            $table->string('rank');
+            $table->integer('league_points');
+            $table->integer('wins');
+            $table->integer('losses');
 
             $table->foreign('account_id')
                 ->references('id')

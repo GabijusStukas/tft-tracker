@@ -15,33 +15,38 @@ class DataDragonService
 	{
 	}
 
-	/**
-	 * @return string
-	 */
-    public function getLatestVersion(): string
+    /**
+     * @param string|null $version
+     * @return string
+     */
+    public function getVersion(?string $version = null): string
     {
-        return Cache::remember('riot.datadragon.latest_version', now()->addHour(), function () {
-            $versions = $this->dataDragonClient->request('GET', 'api/versions.json');
-
-            if (empty($versions[0])) {
-                throw new RuntimeException('Invalid Data Dragon versions response.');
-            }
-
-            return (string) $versions[0];
+        $versions = Cache::remember('riot.datadragon.versions', now()->addHour(), function () {
+            return $this->dataDragonClient->request('GET', 'api/versions.json');
         });
+
+        if ( is_null($version) ) {
+            return $versions[0];
+        }
+
+        if (array_key_exists($version, $versions)) {
+            return $version;
+        }
+
+        /** @var string $result */
+        $result = collect($versions)
+            ->first(fn (string $item) => $item === $version || str_starts_with($item, $version));
+
+        return $result;
     }
 
     /**
      * @param DataDragonIconType $iconType
-     * @param string|null $version
+     * @param string $version
      * @return array
      */
-    public function getCdnData(DataDragonIconType $iconType, ?string $version = null): array
+    public function getCdnData(DataDragonIconType $iconType, string $version): array
     {
-        if (! $version ) {
-            $version = $this->getLatestVersion();
-        }
-
         return Cache::remember(
             'riot.datadragon.cdn_data.' . $version . '.' . $iconType->value,
             now()->addHours(12),
@@ -62,7 +67,7 @@ class DataDragonService
      */
     public function getSummonerIconUrl(int $profileIconId, ?string $version = null): string
     {
-        $resolvedVersion = $version ?? $this->getLatestVersion();
+        $resolvedVersion = $version ?? $this->getVersion();
         $filename = sprintf('%d.png', $profileIconId);
         $relativePath = sprintf('riot/%s/images/%s', $resolvedVersion, $filename);
         $disk = Storage::disk('public');
@@ -87,20 +92,20 @@ class DataDragonService
     /**
      * @param string $iconId
      * @param DataDragonIconType $iconType
+     * @param string $version
      * @return string
      * @throws GuzzleException
      */
-    public function getCdnImageUrl(string $iconId, DataDragonIconType $iconType): string
+    public function getCdnImageUrl(string $iconId, DataDragonIconType $iconType, string $version): string
     {
-        $resolvedVersion = $this->getLatestVersion();
-        $relativePath = $this->buildCdnImageRelativePath($resolvedVersion, $iconType, $iconId);
+        $relativePath = $this->buildCdnImageRelativePath($version, $iconType, $iconId);
         $disk = Storage::disk('public');
 
         if (! $disk->exists($relativePath)) {
-            $championIcon = $this->resolveCdnImageFilename($iconType, $iconId, $resolvedVersion);
+            $championIcon = $this->resolveCdnImageFilename($iconType, $iconId, $version);
             $response = $this->dataDragonClient->requestImage(
                 'GET',
-                sprintf('cdn/%s/img/%s/%s', $resolvedVersion, $iconType->value, $championIcon),
+                sprintf('cdn/%s/img/%s/%s', $version, $iconType->value, $championIcon),
                 [
                     'headers' => [
                         'Accept' => 'image/png',
@@ -151,14 +156,11 @@ class DataDragonService
     /**
      * @param string $entityId
      * @param DataDragonIconType $type
-     * @param string|null $version
+     * @param string $version
      * @return array|null
      */
-    public function getEntityCdnData(string $entityId, DataDragonIconType $type, string $version = null): ?array
+    public function getEntityCdnData(string $entityId, DataDragonIconType $type, string $version): ?array
     {
-        if (! $version ) {
-            $version = $this->getLatestVersion();
-        }
         $cdnData = $this->getCdnData($type, $version);
 
         $championData = $cdnData['data'];
