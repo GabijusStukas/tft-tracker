@@ -5,7 +5,7 @@ namespace Tests\Unit;
 use App\Models\Riot\RiotAccount;
 use App\Models\Riot\RiotMatch;
 use App\Models\Riot\RiotRegion;
-use App\Repositories\RiotMatchRepository;
+use App\Repositories\Riot\RiotMatchRepository;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Tests\TestCase;
 

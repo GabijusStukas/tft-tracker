@@ -7,15 +7,13 @@ use App\Http\Exceptions\RiotApiException;
 use App\Models\Riot\RiotAccount;
 use App\Models\Riot\RiotLeague;
 use App\Models\Riot\RiotSummoner;
+use App\Repositories\Riot\RiotAccountRepository;
 use App\Repositories\Riot\RiotLeagueRepository;
-use App\Repositories\RiotAccountRepository;
-use App\Repositories\RiotMatchRepository;
-use App\Repositories\RiotRegionRepository;
-use App\Repositories\RiotSummonerRepository;
+use App\Repositories\Riot\RiotMatchRepository;
+use App\Repositories\Riot\RiotRegionRepository;
+use App\Repositories\Riot\RiotSummonerRepository;
 use App\Services\Riot\API\RiotServiceFactory;
-use Carbon\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
 
 class RiotService
 {
@@ -27,6 +25,7 @@ class RiotService
      * @param RiotSummonerRepository $riotSummonerRepository
      * @param RiotLeagueRepository $riotLeagueRepository
      * @param DataDragonService $dataDragonService
+     * @param MatchService $matchService
      */
     public function __construct(
         private RiotServiceFactory     $serviceFactory,
@@ -36,6 +35,7 @@ class RiotService
         private RiotSummonerRepository $riotSummonerRepository,
         private RiotLeagueRepository   $riotLeagueRepository,
         private DataDragonService      $dataDragonService,
+        private MatchService           $matchService,
     ) {
     }
 
@@ -72,7 +72,7 @@ class RiotService
     {
         $account = $this->getSummonerByName($DTO);
 
-        if ( $account->matches->isNotEmpty() && $DTO->shouldRefresh() === false ) {
+        if ( $account->participants->isNotEmpty() && $DTO->shouldRefresh() === false ) {
             return $this->riotMatchRepository->getMatchesByAccountId($account->id);
         }
 
@@ -83,18 +83,10 @@ class RiotService
         $result = [];
         foreach ($matches as $match) {
             $matchData = $tftService->getMatch($match);
-            preg_match('/<Releases\/([^>]+)>/', $matchData['info']['game_version'], $matches);
-
-            $result[] = [
-                'account_id'       => $account->id,
-                'match_id'         => $match,
-                'raw_data'         => json_encode($matchData),
-                'game_version'     => $this->dataDragonService->getVersion($matches[1]),
-                'match_created_at' => Carbon::createFromTimestampMs($matchData['info']['gameCreation'])->utc(),
-            ];
+            $result[] = $this->matchService->parseMatchData($matchData);
         }
 
-        return $this->riotMatchRepository->upsert($result);
+        return $result;
     }
 
     /**

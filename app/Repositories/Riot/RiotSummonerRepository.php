@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Repositories\Riot;
 
 use App\Models\Riot\RiotAccount;
 use App\Models\Riot\RiotSummoner;
