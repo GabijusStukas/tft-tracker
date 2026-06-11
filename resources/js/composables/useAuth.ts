@@ -1,12 +1,5 @@
 import { ref, computed } from 'vue';
-
-interface User {
-    id: number;
-    name: string;
-    email: string;
-    avatar?: string;
-    email_verified_at?: string;
-}
+import type { User } from '@/types';
 
 interface AuthResponse {
     access_token: string;

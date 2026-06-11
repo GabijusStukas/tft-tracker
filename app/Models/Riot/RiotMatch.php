@@ -4,19 +4,22 @@ namespace App\Models\Riot;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * @property int $id
- * @property int $account_id
  * @property string $match_id
  * @property string $game_version
+ * @property string $queue_name
+ * @property int $season
  * @property array $raw_data
  * @property Carbon|null $match_created_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property RiotAccount $account
+ * @property Collection<int, RiotMatchParticipant> $participants
  */
 class RiotMatch extends Model
 {
@@ -31,9 +34,10 @@ class RiotMatch extends Model
      * @var string[]
      */
     protected $fillable = [
-        'account_id',
         'match_id',
         'game_version',
+        'queue_name',
+        'season',
         'raw_data',
         'match_created_at',
     ];
@@ -47,10 +51,10 @@ class RiotMatch extends Model
     ];
 
     /**
-     * @return BelongsTo
+     * @return HasMany
      */
-    public function account(): BelongsTo
+    public function participants(): HasMany
     {
-        return $this->belongsTo(RiotAccount::class, 'account_id');
+        return $this->hasMany(RiotMatchParticipant::class, 'match_id', 'id');
     }
 }

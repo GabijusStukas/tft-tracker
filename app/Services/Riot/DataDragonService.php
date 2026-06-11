@@ -6,6 +6,7 @@ use App\Enums\DataDragonIconType;
 use App\Services\Riot\API\DataDragonClient;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
@@ -93,16 +94,26 @@ class DataDragonService
      * @param string $iconId
      * @param DataDragonIconType $iconType
      * @param string $version
-     * @return string
+     * @return string|null
      * @throws GuzzleException
      */
-    public function getCdnImageUrl(string $iconId, DataDragonIconType $iconType, string $version): string
+    public function getCdnImageUrl(string $iconId, DataDragonIconType $iconType, string $version): ?string
     {
         $relativePath = $this->buildCdnImageRelativePath($version, $iconType, $iconId);
         $disk = Storage::disk('public');
 
         if (! $disk->exists($relativePath)) {
-            $championIcon = $this->resolveCdnImageFilename($iconType, $iconId, $version);
+            try {
+                $championIcon = $this->resolveCdnImageFilename($iconType, $iconId, $version);
+            } catch (RuntimeException $e) {
+                Log::warning('Unable to resolve Data Dragon icon filename.', [
+                    'icon_id' => $iconId,
+                    'icon_type' => $iconType->value,
+                    'version' => $version,
+                    'exception' => $e->getMessage(),
+                ]);
+                return null;
+            }
             $response = $this->dataDragonClient->requestImage(
                 'GET',
                 sprintf('cdn/%s/img/%s/%s', $version, $iconType->value, $championIcon),
@@ -114,7 +125,12 @@ class DataDragonService
             );
 
             if ($response->getStatusCode() !== 200) {
-                throw new RuntimeException('Unable to download Data Dragon profile icon.');
+                Log::warning('Unable to download Data Dragon profile icon.', [
+                    'icon_id' => $iconId,
+                    'icon_type' => $iconType->value,
+                    'version' => $version,
+                ]);
+                return null;
             }
 
             $disk->put($relativePath, $response->getBody()->getContents());

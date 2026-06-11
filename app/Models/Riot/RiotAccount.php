@@ -18,7 +18,7 @@ use Illuminate\Support\Collection;
  * @property string $region
  * @property RiotRegion $riotRegion
  * @property RiotSummoner $summoner
- * @property Collection<int, RiotMatch> $matches
+ * @property Collection<int, RiotMatchParticipant> $participants
  * @property Collection<int, RiotLeague> $leagues
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -54,9 +54,9 @@ class RiotAccount extends Model
     /**
      * @return HasMany
      */
-    public function matches(): HasMany
+    public function participants(): HasMany
     {
-        return $this->hasMany(RiotMatch::class, 'account_id', 'id');
+        return $this->hasMany(RiotMatchParticipant::class, 'puuid', 'puuid');
     }
 
     /**

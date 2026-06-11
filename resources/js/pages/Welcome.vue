@@ -6,6 +6,7 @@ import { type BreadcrumbItem } from '@/types';
 import { LoaderCircle } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { useRiotApi } from '@/composables/useRiotApi';
+import axios from 'axios';
 
 const { searchRiotAccount } = useRiotApi();
 
@@ -13,8 +14,8 @@ const form = ref({
     username: '',
     tag_line: ''
 })
-const result = ref(null)
-const error = ref(null)
+const result = ref<unknown>(null)
+const error = ref<string | null>(null)
 const loading = ref(false)
 
 async function searchSummoner() {
@@ -29,8 +30,13 @@ async function searchSummoner() {
             username: summoner.game_name,
             tagLine: summoner.tag_line,
         }))
-    } catch (e) {
-        error.value = e.response?.data?.message || 'An error occurred.'
+    } catch (e: unknown) {
+        if (axios.isAxiosError(e)) {
+            error.value = (e.response?.data as { message?: string } | undefined)?.message ?? 'An error occurred.'
+            return;
+        }
+
+        error.value = 'An error occurred.'
     } finally {
         loading.value = false
     }

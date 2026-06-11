@@ -14,19 +14,14 @@ return new class extends Migration
         Schema::create('riot_matches', function (Blueprint $table) {
             $table->id();
 
-            $table->unsignedBigInteger('account_id')->index();
             $table->string('match_id')->index();
             $table->string('game_version')->index();
+            $table->string('queue_name')->index();
+            $table->integer('season')->index();
             $table->json('raw_data');
             $table->timestamp('match_created_at');
+
             $table->timestamps();
-
-            $table->foreign('account_id')
-                ->references('id')
-                ->on('riot_accounts')
-                ->onDelete('cascade');
-
-            $table->unique(['account_id', 'match_id']);
         });
     }
 

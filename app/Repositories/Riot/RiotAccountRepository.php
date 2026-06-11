@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Repositories\Riot;
 
 use App\DTO\RiotAccountSearchDTO;
 use App\Models\Riot\RiotAccount;
@@ -14,7 +14,7 @@ class RiotAccountRepository
     public function getAccount(RiotAccountSearchDTO $DTO): ?RiotAccount
     {
         return RiotAccount::query()
-            ->with(['summoner', 'matches', 'leagues'])
+            ->with(['summoner', 'participants', 'leagues'])
             ->where('game', $DTO->getGame())
             ->where('region', $DTO->getRegion())
             ->where('game_name', $DTO->getUsername())
