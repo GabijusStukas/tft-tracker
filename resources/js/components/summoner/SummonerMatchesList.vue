@@ -23,6 +23,35 @@ const { fetchSummonerMatches } = useRiotApi();
 
 const skeletonCards = [1, 2, 3, 4, 5];
 
+function normalizeText(value?: string | null): string {
+    return String(value ?? '').trim().toLowerCase();
+}
+
+function normalizeTagLine(value?: string | null): string {
+    return normalizeText(value).replace(/^#/, '');
+}
+
+function normalizeIsoTimestamp(value?: string | number): string | number | undefined {
+    if (typeof value !== 'string') {
+        return value;
+    }
+
+    // Laravel serializes microseconds (e.g. .000000Z); trim to milliseconds for stable Date parsing.
+    return value.replace(/\.(\d{3})\d+Z$/, '.$1Z');
+}
+
+function asArray<T>(value: unknown): T[] {
+    if (Array.isArray(value)) {
+        return value as T[];
+    }
+
+    if (value && typeof value === 'object') {
+        return Object.values(value as Record<string, T>);
+    }
+
+    return [];
+}
+
 function formatUtcTimestamp(value?: string | number): string {
     if (value === undefined || value === null || value === '') {
         return '-';
@@ -48,10 +77,15 @@ async function loadMatches(refresh = false) {
             tagLine: props.tagLine,
         }, { refresh });
 
-        matches.value = responseMatches
+        matches.value = asArray<any>(responseMatches)
             .map((match: any) => {
-                const participants = match?.raw_data?.info?.participants ?? [];
-                const summonerParticipant = participants.find((participant: any) => participant.puuid === match?.puuid);
+                const participants = asArray<any>(match?.participants);
+                const expectedGameName = normalizeText(props.username);
+                const expectedTagLine = normalizeTagLine(props.tagLine);
+                const summonerParticipant = participants.find((participant: any) => {
+                    return normalizeText(participant?.game_name) === expectedGameName
+                        && normalizeTagLine(participant?.tag_line) === expectedTagLine;
+                }) ?? participants[0];
 
                 if (!summonerParticipant) {
                     return null;
@@ -60,8 +94,9 @@ async function loadMatches(refresh = false) {
                 const placement = summonerParticipant.placement ?? 8;
 
                 return {
+                    matchId: String(match?.match_id ?? ''),
                     placement,
-                    traits: (summonerParticipant.traits ?? [])
+                    traits: asArray<any>(summonerParticipant?.traits)
                         .filter((trait: any) => (trait.style ?? 0) > 0)
                         .sort((a: any, b: any) => (b.style ?? 0) - (a.style ?? 0) || (b.num_units ?? 0) - (a.num_units ?? 0))
                         .map((trait: any) => ({
@@ -70,21 +105,24 @@ async function loadMatches(refresh = false) {
                             style: trait.style ?? 0,
                             num_units: trait.num_units ?? 0,
                         })),
-                    gameType: String(match?.raw_data?.info?.queue_name ?? ''),
-                    date: formatUtcTimestamp(match?.match_created_at ?? match?.raw_data?.info?.game_datetime ?? match?.raw_data?.info?.gameCreation),
-                    units: (summonerParticipant.units ?? []).map((unit: any) => ({
-                        character_id: unit.character_id,
+                    gameType: String(match?.queue_name ?? ''),
+                    date: formatUtcTimestamp(normalizeIsoTimestamp(match?.match_created_at)),
+                    units: asArray<any>(summonerParticipant?.units).map((unit: any, unitIndex: number) => ({
+                        character_id: unit.character_id ?? unit.name ?? `unit-${unitIndex}`,
                         name: unit.name ?? null,
                         icon: unit.icon ?? null,
                         rarity: Number(unit.rarity ?? 0),
                         tier: Number(unit.tier ?? 0),
-                        items: (unit.items ?? []).slice(0, 3).map((item: any) => ({
+                        items: asArray<any>(unit?.items).slice(0, 3).map((item: any) => ({
                             icon: item.icon ?? null,
                         })),
                     })),
                 };
             })
             .filter(Boolean) as MatchItem[];
+    } catch (error) {
+        console.error('Failed to load matches', error);
+        matches.value = [];
     } finally {
         isLoading.value = false;
     }
@@ -120,7 +158,7 @@ watch(
         <template v-else-if="matches.length > 0">
             <SummonerMatchCard
                 v-for="(match, index) in matches"
-                :key="`${match.date}-${index}`"
+                :key="`${match.matchId}-${index}`"
                 :match="match"
             />
         </template>

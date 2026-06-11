@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
  * @property string $character_id
  * @property string $name
  * @property int $tier
+ * @property int $rarity
  * @property string $icon
  * @property array $items
  * @property Carbon|null $created_at
@@ -36,6 +37,7 @@ class RiotMatchParticipantUnit extends Model
         'character_id',
         'name',
         'tier',
+        'rarity',
         'icon',
         'items',
     ];

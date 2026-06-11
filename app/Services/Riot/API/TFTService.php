@@ -26,7 +26,7 @@ class TFTService
             return $this->client->request('GET',"tft/match/v1/matches/by-puuid/$puuid/ids", [
                 'query' => [
                     'start' => 0,
-                    'count' => 10
+                    'count' => 5
                 ]
             ]);
         } catch (Throwable $exception) {

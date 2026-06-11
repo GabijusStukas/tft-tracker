@@ -16,9 +16,10 @@ return new class extends Migration
 
             $table->unsignedBigInteger('participant_id');
             $table->string('character_id')->index();
-            $table->string('name');
+            $table->string('name')->nullable();
             $table->integer('tier');
-            $table->string('icon');
+            $table->integer('rarity');
+            $table->string('icon')->nullable();
             $table->json('items');
 
             $table->foreign('participant_id')

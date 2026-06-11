@@ -20,16 +20,33 @@ class RiotMatchRepository
     }
 
     /**
-     * @param int $accountId
+     * @param string $puuid
      * @return Collection<int, RiotMatch>
      */
-    public function getMatchesByAccountId(int $accountId): Collection
+    public function getMatchesByPuuid(string $puuid): Collection
     {
         return RiotMatch::query()
-            ->with('account')
-            ->where('account_id', $accountId)
-            ->limit(10)
+            ->with(['participants' => function ($query) use ($puuid) {
+                $query
+                    ->where('puuid', $puuid)
+                    ->with(['units', 'traits']);
+            }])
+            ->limit(5)
             ->latest('match_created_at')
             ->get();
+    }
+
+    /**
+     * @param array $matchIds
+     * @return array
+     */
+    public function getMissingMatchIds(array $matchIds): array
+    {
+        $existingMatches = RiotMatch::query()
+            ->whereIn('match_id', $matchIds)
+            ->pluck('match_id')
+            ->toArray();
+
+        return array_diff($matchIds, $existingMatches);
     }
 }

@@ -5,7 +5,11 @@ import { formatMatchDate, normalizeTraitName } from './utils';
 
 const props = defineProps<{ match: MatchItem }>();
 
-function getUnitName(characterId: string): string {
+function getUnitName(characterId?: string): string {
+    if (!characterId) {
+        return 'Unit';
+    }
+
     return characterId.replace(/^TFT\d+_/, '');
 }
 

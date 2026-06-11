@@ -10,10 +10,8 @@ class RiotMatchParticipantUnitRepository
      * @param array $unitData
      * @return RiotMatchParticipantUnit
      */
-    public function createOrUpdate(array $unitData): RiotMatchParticipantUnit
+    public function create(array $unitData): RiotMatchParticipantUnit
     {
-        return RiotMatchParticipantUnit::query()->updateOrCreate([
-            'participant_id' => $unitData['participant_id'],
-        ], $unitData);
+        return RiotMatchParticipantUnit::query()->create($unitData);
     }
 }

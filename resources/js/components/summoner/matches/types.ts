@@ -6,7 +6,7 @@ export interface TraitItem {
 }
 
 export interface UnitItem {
-    character_id: string;
+    character_id?: string;
     name?: string | null;
     icon?: string | null;
     rarity: number;
@@ -17,6 +17,7 @@ export interface UnitItem {
 }
 
 export interface MatchItem {
+    matchId: string;
     placement: number;
     traits: TraitItem[];
     gameType: string;
