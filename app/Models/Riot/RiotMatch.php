@@ -25,6 +25,9 @@ class RiotMatch extends Model
 {
     use HasFactory;
 
+    /** @var int */
+    public const MAX_PARTICIPANTS = 8;
+
     /**
      * @var string
      */

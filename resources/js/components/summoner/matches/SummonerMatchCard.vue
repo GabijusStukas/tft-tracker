@@ -1,62 +1,15 @@
 <script setup lang="ts">
+import { useTftMatchPresentation } from '@/composables/useTftMatchPresentation';
 import TraitBadge from '../../traits/TraitBadge.vue';
 import type { MatchItem } from './types';
-import { formatMatchDate, normalizeTraitName } from './utils';
+import { formatMatchDate } from './utils';
 
 const props = defineProps<{ match: MatchItem }>();
 
-function getUnitName(characterId?: string): string {
-    if (!characterId) {
-        return 'Unit';
-    }
+const { normalizeTraitName, getUnitName, getUnitColor, getUnitStyle, getVisibleUnitItems, getPlacementClass, getPlacementLabel } = useTftMatchPresentation();
 
-    return characterId.replace(/^TFT\d+_/, '');
-}
-
-function getUnitColor(rarity: number): string {
-    const rarityColors: Record<number, string> = {
-        6: '#EB9C00',
-        4: '#E537A2',
-        2: '#0093FF',
-        1: '#00AE0A',
-        0: '#9AA4AF',
-    };
-
-    return rarityColors[rarity] ?? '#9AA4AF';
-}
-
-function getUnitStyle(rarity: number): Record<string, string> {
-    return {
-        borderColor: getUnitColor(rarity),
-    };
-}
-
-function getVisibleUnitItems(items: Array<{ icon?: string | null }>): Array<{ icon?: string | null }> {
-    return items.filter((item) => Boolean(item.icon)).slice(0, 3);
-}
-
-function getPlacementClass(placement: number): string {
-    if (placement === 1) {
-        return 'border border-amber-300/70 bg-amber-50 text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200';
-    }
-
-    if (placement <= 4) {
-        return 'border border-emerald-300/70 bg-emerald-50 text-emerald-800 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200';
-    }
-
-    return 'border border-rose-300/70 bg-rose-50 text-rose-800 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200';
-}
-
-function getPlacementLabel(placement: number): string {
-    if (placement === 1) {
-        return 'Victory';
-    }
-
-    if (placement <= 4) {
-        return 'Top 4';
-    }
-
-    return 'Bottom 4';
+function getMatchDetailsHref(matchId: string): string {
+    return `/tft/match/${encodeURIComponent(matchId)}`;
 }
 </script>
 
@@ -89,6 +42,12 @@ function getPlacementLabel(placement: number): string {
                     </p>
                 </div>
             </div>
+            <a
+                :href="getMatchDetailsHref(props.match.matchId)"
+                class="shrink-0 rounded-md border border-blue-300/70 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-500/40 dark:bg-blue-500/10 dark:text-blue-200 dark:hover:bg-blue-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
+            >
+                View Match
+            </a>
         </div>
 
         <div class="mt-3 flex gap-2 overflow-x-auto pb-1">

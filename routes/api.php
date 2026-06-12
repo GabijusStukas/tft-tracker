@@ -13,6 +13,8 @@ Route::middleware(AuthenticateWithJwt::class)->group(function () {
 
     Route::get('summoners/search', [RiotAccountController::class, 'search'])->name('riot.account.search');
 
+    Route::get('tft/match/{match_id}', [RiotMatchesController::class, 'show'])->name('riot.match.show');
+
     Route::prefix('{game}/summoners/{region}/{username}-{tag_line}')->group(function () {
         Route::get('profile', [RiotAccountController::class, 'index'])->name('riot.account.index');
         Route::get('matches', [RiotMatchesController::class, 'index'])->name('riot.matches');

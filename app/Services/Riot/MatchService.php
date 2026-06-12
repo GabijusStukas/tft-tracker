@@ -79,7 +79,7 @@ class MatchService
             'game_version' => $gameVersion,
             'queue_name' => $queueName,
             'season' => $matchData['info']['tft_set_number'],
-            'raw_data' => json_encode($matchData),
+            'raw_data' => $matchData,
             'match_created_at' => Carbon::createFromTimestampMs($matchData['info']['gameCreation'])->utc(),
         ];
     }

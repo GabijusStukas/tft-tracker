@@ -49,4 +49,18 @@ class RiotMatchRepository
 
         return array_diff($matchIds, $existingMatches);
     }
+
+    /**
+     * @param string $matchId
+     * @return RiotMatch|null
+     */
+    public function getMatchById(string $matchId): ?RiotMatch
+    {
+        return RiotMatch::query()
+            ->with(['participants' => function ($query) {
+                $query->with(['units', 'traits']);
+            }])
+            ->where('match_id', $matchId)
+            ->first();
+    }
 }

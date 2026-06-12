@@ -71,11 +71,20 @@ export function useRiotApi() {
         return Array.isArray(response.data) ? response.data : response.data?.data ?? [];
     }
 
+    async function fetchMatchDetails(matchId: string): Promise<any> {
+        const response = await axios.get(route('riot.match.show', {
+            match_id: matchId,
+        }));
+
+        return response.data?.data ?? response.data ?? {};
+    }
+
     return {
         searchRiotAccount,
         fetchSummonerProfile,
         fetchSummonerMatches,
         fetchSummonerLeague,
+        fetchMatchDetails,
     };
 }
 
