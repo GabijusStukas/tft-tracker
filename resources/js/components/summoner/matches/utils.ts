@@ -1,9 +1,3 @@
-export function normalizeTraitName(name: string): string {
-    return name
-        .replace(/^TFT\d+_/, '')
-        .replace(/(UniqueTrait|Trait)$/, '')
-        .replace(/_/g, ' ');
-}
 
 export function formatMatchDate(date: string): string {
     const parsed = new Date(date);

@@ -23,7 +23,7 @@ class RiotMatchRepositoryTest extends TestCase
         $result = $repository->createOrUpdate([
             'account_id' => $account->id,
             'match_id' => 'EUW1_1001',
-            'raw_data' => json_encode(['placement' => 1]),
+            'raw_data' => ['placement' => 1],
             'queue_name' => 'ranked',
             'season' => 17,
             'game_version' => '10.24.1',
@@ -32,7 +32,7 @@ class RiotMatchRepositoryTest extends TestCase
 
         $this->assertInstanceOf(RiotMatch::class, $result);
         $this->assertSame('EUW1_1001', $result->match_id);
-        $this->assertSame(json_encode(['placement' => 1]), $result->raw_data);
+        $this->assertSame(['placement' => 1], $result->raw_data);
     }
 
     public function test_it_updates_existing_match_with_create_or_update(): void
@@ -48,7 +48,7 @@ class RiotMatchRepositoryTest extends TestCase
         $created = $repository->createOrUpdate([
             'account_id' => $account->id,
             'match_id' => 'EUW1_2001',
-            'raw_data' => json_encode(['placement' => 7]),
+            'raw_data' => ['placement' => 7],
             'queue_name' => 'ranked',
             'season' => 17,
             'game_version' => '10.24.1',
@@ -58,7 +58,7 @@ class RiotMatchRepositoryTest extends TestCase
         $updated = $repository->createOrUpdate([
             'account_id' => $account->id,
             'match_id' => 'EUW1_2001',
-            'raw_data' => json_encode(['placement' => 3]),
+            'raw_data' => ['placement' => 3],
             'queue_name' => 'ranked',
             'season' => 17,
             'game_version' => '10.24.1',
@@ -67,7 +67,7 @@ class RiotMatchRepositoryTest extends TestCase
 
         $this->assertSame($created->id, $updated->id);
         $this->assertSame(1, RiotMatch::query()->where('match_id', 'EUW1_2001')->count());
-        $this->assertSame(json_encode(['placement' => 3]), $updated->fresh()?->raw_data);
+        $this->assertSame(['placement' => 3], $updated->fresh()?->raw_data);
     }
 }
 

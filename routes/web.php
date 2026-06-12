@@ -13,6 +13,12 @@ Route::middleware(AuthenticateWithJwt::class)->group(function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
+    Route::get('tft/match/{matchId}', function (string $matchId) {
+        return Inertia::render('Match', [
+            'matchId' => $matchId,
+        ]);
+    })->name('match.show');
+
     Route::get('{game}/summoners/{region}/{username}-{tagLine}', function ($game, $region, $username, $tagLine) {
         return Inertia::render('Summoner', [
             'game' => $game,

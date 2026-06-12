@@ -6,6 +6,7 @@ use App\DTO\RiotAccountSearchDTO;
 use App\Http\Exceptions\RiotApiException;
 use App\Models\Riot\RiotAccount;
 use App\Models\Riot\RiotLeague;
+use App\Models\Riot\RiotMatch;
 use App\Models\Riot\RiotSummoner;
 use App\Repositories\Riot\RiotRepositoryFactory;
 use App\Services\Riot\API\RiotServiceFactory;
@@ -60,7 +61,10 @@ class RiotService
      */
     public function getSummonerMatches(RiotAccountSearchDTO $DTO): Collection
     {
+        $originalRefresh = $DTO->shouldRefresh();
+        $DTO->setRefresh(false);
         $account = $this->getSummonerByName($DTO);
+        $DTO->setRefresh($originalRefresh);
 
         if ( $account->participants->isNotEmpty() && $DTO->shouldRefresh() === false ) {
             return $this->repositoryFactory->match()->getMatchesByPuuid($account->puuid);
@@ -73,6 +77,9 @@ class RiotService
 
         foreach ($missingMatches as $match) {
             $matchData = $tftService->getMatch($match);
+            $matchData['info']['participants'] = array_filter($matchData['info']['participants'], function ($participant) use ($account) {
+                return $participant['puuid'] === $account->puuid;
+            });
             $this->matchService->parseMatchData($matchData);
         }
 
@@ -104,7 +111,10 @@ class RiotService
      */
     public function getAccountLeague(RiotAccountSearchDTO $DTO): Collection
     {
+        $originalRefresh = $DTO->shouldRefresh();
+        $DTO->setRefresh(false);
         $account = $this->getSummonerByName($DTO);
+        $DTO->setRefresh($originalRefresh);
 
         if ( $account->leagues->isNotEmpty() && $DTO->shouldRefresh() === false ) {
             return $this->repositoryFactory->league()->getByAccountId($account->id);
@@ -126,5 +136,24 @@ class RiotService
         }
 
         return $result;
+    }
+
+    /**
+     * @param string $matchId
+     * @return RiotMatch|null
+     * @throws GuzzleException
+     * @throws RiotApiException
+     * @throws Throwable
+     */
+    public function getMatchDetails(string $matchId): ?RiotMatch
+    {
+        $match = $this->repositoryFactory->match()->getMatchById($matchId);
+
+        if ($match->participants->count() !== RiotMatch::MAX_PARTICIPANTS) {
+            $matchData = $this->serviceFactory->tft()->getMatch($matchId);
+            $match = $this->matchService->parseMatchData($matchData);
+        }
+
+        return $match;
     }
 }

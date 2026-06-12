@@ -44,7 +44,10 @@ class RiotClient
      */
     public function request(string $method, string $uri, array $options = []): array
     {
-        Log::info('Riot API request');
+        Log::info('Riot API request', [
+            'method' => $method,
+            'uri' => $uri,
+        ]);
 
         $response = $this->client->request($method, $uri, $options);
         return json_decode($response->getBody()->getContents(), true);
